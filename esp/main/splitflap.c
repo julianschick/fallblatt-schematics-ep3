@@ -1,19 +1,41 @@
+// Basis
 #include <stdint.h>
 #include <string.h>
 #include <stdbool.h>
 #include <stdio.h>
-#include "nvs.h"
-#include "nvs_flash.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
+
+// Logging
 #include "esp_log.h"
+
+// NVS
+#include "nvs.h"
+#include "nvs_flash.h"
+
+// GPIO/ADC
+#include "driver/gpio.h"
+#include "driver/adc.h"
+
+// BT
 #include "esp_bt.h"
 #include "esp_bt_main.h"
 #include "esp_gap_bt_api.h"
 #include "esp_bt_device.h"
 #include "esp_spp_api.h"
-#include "driver/gpio.h"
-#include "driver/adc.h"
+
+// WIFI
+#include "tcpip_adapter.h"
+#include "esp_wifi.h"
+#include "esp_event_loop.h"
+#include "freertos/event_groups.h"
+
+// HTTP server
+#include "lwip/err.h"
+#include "lwip/sys.h"
+#include "lwip/netdb.h"
+#include "lwip/api.h"
+
 
 #define PIN_MOTOR 23
 #define PIN_HOME_SENSOR 21
@@ -28,7 +50,6 @@
 #define H_FALLING_THRESHOLD 500
 #define H_RISING_THRESHOLD 1500
 
-#define SPP_TAG "BT INPUT"
 #define SPP_SERVER_NAME "Splitflap Serial Command Input"
 #define BT_DEVICE_NAME "Splitflap"
 
@@ -43,17 +64,28 @@ int hsensor_ch_flag;
 #define NOCHANGE 0
 #define RISING 1
 
-int current_flap;
-bool current_flap_inaccurate;
-int flap_cmd;
-
+// BT
 #define BT_BUFFER_LEN 256
 char bt_buffer[BT_BUFFER_LEN];
 int bt_buffer_end = 0;
 
+// WIFI
+static EventGroupHandle_t wifi_event_group;
+const int CONNECTED_BIT = BIT0;
+
+//Tasks
+TaskHandle_t flap_task_h;
+TaskHandle_t http_server_task_h;
+
+// log tags
+#define TAG_FLAP "flap"
+#define TAG_WIFI "wifiU"
+#define TAG_BT "bluetooth"
+#define TAG_HTTP "http"
+
 bool parse_buffer();
 
-void setup() {
+void setup_gpio() {
 	gpio_config_t io_conf;
     io_conf.intr_type = GPIO_PIN_INTR_DISABLE;
     io_conf.mode = GPIO_MODE_OUTPUT;
@@ -79,7 +111,7 @@ static void bluetooth_callback(esp_spp_cb_event_t event, esp_spp_cb_param_t *par
 
         case ESP_SPP_INIT_EVT:
 
-            ESP_LOGI(SPP_TAG, "ESP_SPP_INIT_EVT");
+            ESP_LOGI(TAG_BT, "ESP_SPP_INIT_EVT");
 
             esp_bt_dev_set_device_name(BT_DEVICE_NAME);
             esp_bt_gap_set_scan_mode(ESP_BT_SCAN_MODE_CONNECTABLE_DISCOVERABLE);
@@ -88,7 +120,7 @@ static void bluetooth_callback(esp_spp_cb_event_t event, esp_spp_cb_param_t *par
 
         case ESP_SPP_DATA_IND_EVT:
 
-            ESP_LOGI(SPP_TAG, "ESP_SPP_DATA_IND_EVT len=%d handle=%d",
+            ESP_LOGI(TAG_BT, "ESP_SPP_DATA_IND_EVT len=%d handle=%d",
                  param->data_ind.len, param->data_ind.handle);
             esp_log_buffer_hex("",param->data_ind.data,param->data_ind.len);
 
@@ -109,29 +141,29 @@ static void bluetooth_callback(esp_spp_cb_event_t event, esp_spp_cb_param_t *par
             break;
 
             case ESP_SPP_DISCOVERY_COMP_EVT:
-        ESP_LOGI(SPP_TAG, "ESP_SPP_DISCOVERY_COMP_EVT");
+        ESP_LOGI(TAG_BT, "ESP_SPP_DISCOVERY_COMP_EVT");
         break;
     case ESP_SPP_OPEN_EVT:
-        ESP_LOGI(SPP_TAG, "ESP_SPP_OPEN_EVT");
+        ESP_LOGI(TAG_BT, "ESP_SPP_OPEN_EVT");
         break;
     case ESP_SPP_CLOSE_EVT:
-        ESP_LOGI(SPP_TAG, "ESP_SPP_CLOSE_EVT");
+        ESP_LOGI(TAG_BT, "ESP_SPP_CLOSE_EVT");
         break;
     case ESP_SPP_START_EVT:
-        ESP_LOGI(SPP_TAG, "ESP_SPP_START_EVT");
+        ESP_LOGI(TAG_BT, "ESP_SPP_START_EVT");
         break;
     case ESP_SPP_CL_INIT_EVT:
-        ESP_LOGI(SPP_TAG, "ESP_SPP_CL_INIT_EVT");
+        ESP_LOGI(TAG_BT, "ESP_SPP_CL_INIT_EVT");
         break;
 
          case ESP_SPP_CONG_EVT:
-        ESP_LOGI(SPP_TAG, "ESP_SPP_CONG_EVT");
+        ESP_LOGI(TAG_BT, "ESP_SPP_CONG_EVT");
         break;
     case ESP_SPP_WRITE_EVT:
-        ESP_LOGI(SPP_TAG, "ESP_SPP_WRITE_EVT");
+        ESP_LOGI(TAG_BT, "ESP_SPP_WRITE_EVT");
         break;
     case ESP_SPP_SRV_OPEN_EVT:
-        ESP_LOGI(SPP_TAG, "ESP_SPP_SRV_OPEN_EVT");
+        ESP_LOGI(TAG_BT, "ESP_SPP_SRV_OPEN_EVT");
         break;
         
         default:
@@ -142,44 +174,78 @@ static void bluetooth_callback(esp_spp_cb_event_t event, esp_spp_cb_param_t *par
 }
 
 void setup_bluetooth() {
-    esp_err_t ret = nvs_flash_init();
-    if (ret == ESP_ERR_NVS_NO_FREE_PAGES) {
-        ESP_ERROR_CHECK(nvs_flash_erase());
-        ret = nvs_flash_init();
-    }
-    ESP_ERROR_CHECK( ret );
-
-
+    
     esp_bt_controller_config_t bt_cfg = BT_CONTROLLER_INIT_CONFIG_DEFAULT();
     if (esp_bt_controller_init(&bt_cfg) != ESP_OK) {
-        ESP_LOGE(SPP_TAG, "%s initialize controller failed\n", __func__);
+        ESP_LOGE(TAG_BT, "%s initialize controller failed\n", __func__);
         return;
     }
 
     if (esp_bt_controller_enable(ESP_BT_MODE_CLASSIC_BT) != ESP_OK) {
-        ESP_LOGE(SPP_TAG, "%s enable controller failed\n", __func__);
+        ESP_LOGE(TAG_BT, "%s enable controller failed\n", __func__);
         return;
     }
 
     if (esp_bluedroid_init() != ESP_OK) {
-        ESP_LOGE(SPP_TAG, "%s initialize bluedroid failed\n", __func__);
+        ESP_LOGE(TAG_BT, "%s initialize bluedroid failed\n", __func__);
         return;
     }
 
     if (esp_bluedroid_enable() != ESP_OK) {
-        ESP_LOGE(SPP_TAG, "%s enable bluedroid failed\n", __func__);
+        ESP_LOGE(TAG_BT, "%s enable bluedroid failed\n", __func__);
         return;
     }
 
     if (esp_spp_register_callback(bluetooth_callback) != ESP_OK) {
-        ESP_LOGE(SPP_TAG, "%s spp register failed\n", __func__);
+        ESP_LOGE(TAG_BT, "%s spp register failed\n", __func__);
         return;
     }
 
     if (esp_spp_init(ESP_SPP_MODE_CB) != ESP_OK) {
-        ESP_LOGE(SPP_TAG, "%s spp init failed\n", __func__);
+        ESP_LOGE(TAG_BT, "%s spp init failed\n", __func__);
         return;
     }
+}
+
+static esp_err_t event_handler(void *ctx, system_event_t *event)
+{
+    switch(event->event_id) {
+    case SYSTEM_EVENT_STA_START:
+        esp_wifi_connect();
+        break;
+    case SYSTEM_EVENT_STA_GOT_IP:
+        xEventGroupSetBits(wifi_event_group, CONNECTED_BIT);
+        break;
+    case SYSTEM_EVENT_STA_DISCONNECTED:
+        /* This is a workaround as ESP32 WiFi libs don't currently
+           auto-reassociate. */
+        esp_wifi_connect();
+        xEventGroupClearBits(wifi_event_group, CONNECTED_BIT);
+        break;
+    default:
+        break;
+    }
+    return ESP_OK;
+}
+
+static void setup_wifi(void)
+{
+    tcpip_adapter_init();
+    wifi_event_group = xEventGroupCreate();
+    ESP_ERROR_CHECK( esp_event_loop_init(event_handler, NULL) );
+    wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
+    ESP_ERROR_CHECK( esp_wifi_init(&cfg) );
+    ESP_ERROR_CHECK( esp_wifi_set_storage(WIFI_STORAGE_RAM) );
+    wifi_config_t wifi_config = {
+        .sta = {
+            .ssid = "WLAN-150040",
+            .password = "9539638648597419",
+        },
+    };
+    ESP_LOGI(TAG_WIFI, "Setting WiFi configuration SSID %s...", wifi_config.sta.ssid);
+    ESP_ERROR_CHECK( esp_wifi_set_mode(WIFI_MODE_STA) );
+    ESP_ERROR_CHECK( esp_wifi_set_config(ESP_IF_WIFI_STA, &wifi_config) );
+    ESP_ERROR_CHECK( esp_wifi_start() );
 }
 
 inline void read_sensors_raw_values() {
@@ -234,84 +300,223 @@ inline void read_sensors() {
     
 }
 
-void app_main()
-{
-    setup_bluetooth();
-	setup();
+void flap_task() {
+    setup_gpio();
     init_sensors();
 
-	current_flap = 0;
-	bool flap_ch_flag = false;
-	current_flap_inaccurate = true;
-	flap_cmd = 0;
-	bool motor_running = false;
-	bool next_flap_is_home = false;
+    int current_flap = 0;
+    bool flap_ch_flag = false;
+    bool current_flap_inaccurate = true;
+    int flap_cmd = 0;
+    bool motor_running = false;
+    bool next_flap_is_home = false;
+    uint32_t notificationValue;
 
-	while (1) {
-		read_sensors();
+    while (1) {
 
-		if (hsensor_ch_flag == RISING) {
-			printf("h rising\n");
-		} else if (hsensor_ch_flag == FALLING) {
-			printf("h falling\n");
-		}
+        if (xTaskNotifyWait(0, 0, &notificationValue, 0) == pdTRUE) {
+            flap_cmd = notificationValue;            
+            ESP_LOGI("flap", "Received notification with value %d", notificationValue);
+        }
 
-		if (fsensor_ch_flag == RISING) {
-			printf("f rising\n");
-		} else if (fsensor_ch_flag == FALLING) {
-			printf("f falling\n");
-		}
+        read_sensors();
 
-		if (fsensor_ch_flag == RISING) {
-			current_flap = (current_flap + 1) % NUMBER_OF_FLAPS;
-			flap_ch_flag = true;
-			printf("current_flap = %d\n", current_flap);
+        if (hsensor_ch_flag == RISING) {
+            ESP_LOGI(TAG_FLAP, "Home sensor level RISING");
+        } else if (hsensor_ch_flag == FALLING) {
+            ESP_LOGI(TAG_FLAP, "Home sensor level FALLING");
+        }
 
-			if (next_flap_is_home) {
-				if (current_flap != 0) {
-					printf("home disagree!\n");
-				} else {
-					printf("home agree!\n");
-				}
-				current_flap = 0;
-				current_flap_inaccurate = false;
-				next_flap_is_home = false;
-			}
-		}
+        if (fsensor_ch_flag == RISING) {
+            ESP_LOGI(TAG_FLAP, "Flap sensor level RISING");
+        } else if (fsensor_ch_flag == FALLING) {
+            ESP_LOGI(TAG_FLAP, "Flap sensor level FALLING");
+        }
 
-		if (hsensor_ch_flag == RISING) {
-			next_flap_is_home = true;
-		}
+        if (fsensor_ch_flag == RISING) {
+            current_flap = (current_flap + 1) % NUMBER_OF_FLAPS;
+            flap_ch_flag = true;
+            ESP_LOGI(TAG_FLAP, "current_flap = %d", current_flap);
 
-		char ch = fgetc(stdin);
-		if (ch < NUMBER_OF_FLAPS) {
-			flap_cmd = ch;
-			printf("flap_cmd = %d\n", flap_cmd);
-		} else if (ch == 110) {
-			flap_cmd++;
-			printf("flap_cmd = %d\n", flap_cmd);	
-		}
+            if (next_flap_is_home) {
+                if (current_flap != 0) {
+                    ESP_LOGI(TAG_FLAP, "Home disagree (should be 0 but is %d)", current_flap);
+                } else {
+                    ESP_LOGI(TAG_FLAP, "Home OK");
+                }
+                current_flap = 0;
+                current_flap_inaccurate = false;
+                next_flap_is_home = false;
+            }
+        }
 
-		hsensor_ch_flag = NOCHANGE;
-		fsensor_ch_flag = NOCHANGE;
+        if (hsensor_ch_flag == RISING) {
+            next_flap_is_home = true;
+        }
 
-		if (flap_ch_flag) {
-			if (current_flap == flap_cmd) {
-				gpio_set_level(PIN_MOTOR, 1);
-				motor_running = false;
-				printf("motor off\n");
-			}
-		}
+        /*char ch = fgetc(stdin);
+        if (ch < NUMBER_OF_FLAPS) {
+            flap_cmd = ch;
+            printf("flap_cmd = %d\n", flap_cmd);
+        } else if (ch == 110) {
+            flap_cmd++;
+            printf("flap_cmd = %d\n", flap_cmd);    
+        }*/
 
-		flap_ch_flag = false;
+        hsensor_ch_flag = NOCHANGE;
+        fsensor_ch_flag = NOCHANGE;
 
-		if ((current_flap != flap_cmd || current_flap_inaccurate) && !motor_running) {
-			gpio_set_level(PIN_MOTOR, 0);
-			motor_running = true;
-			printf("motor on\n");
-		}
-	}
+        if (flap_ch_flag) {
+            if (current_flap == flap_cmd) {
+                gpio_set_level(PIN_MOTOR, 1);
+                motor_running = false;
+                ESP_LOGI(TAG_FLAP, "Motor OFF");
+            }
+        }
 
+        flap_ch_flag = false;
+
+        if ((current_flap != flap_cmd || current_flap_inaccurate) && !motor_running) {
+            gpio_set_level(PIN_MOTOR, 0);
+            motor_running = true;
+            ESP_LOGI(TAG_FLAP, "Motor ON");
+        }
+    }
+}
+
+const static char http_resp_hdr_good[] =
+    "HTTP/1.1 200 OK\r\nContent-type: text/html\r\n\r\n";
+const static char http_resp_hdr_bad[] =
+    "HTTP/1.1 400 Bad Request\r\nContent-type: text/html\r\n\r\n";
+const static char http_resp_reboot[] = 
+    "<!DOCTYPE html><html><body>REBOOT</body></html>";
+const static char http_resp_flap[] = 
+    "<!DOCTYPE html><html><body>FLAP XX</body></html>";
+
+
+static void http_server_netconn_serve(struct netconn *conn)
+{
+    struct netbuf *inbuf;
+    char *buf;
+    u16_t buflen;
+    err_t err;
+
+    /* Read the data from the port, blocking if nothing yet there.
+    We assume the request (the part we care about) is in one netbuf */
+    err = netconn_recv(conn, &inbuf);
+
+    bool erroneous_request = true;
+    bool reboot = false;
+
+    if (err == ERR_OK) {
+        netbuf_data(inbuf, (void**)&buf, &buflen);
+
+        char instr[buflen+1];
+        memcpy(instr, buf, buflen);
+        instr[buflen] = 0x00;
+
+        if (strncmp(instr, "GET /FLAP/", 10) == 0) {
+            if (strlen(instr) > 10) {
+                char* number_start = instr + 10;
+                char* number_end;
+                int flap = strtol(number_start, &number_end, 10);
+
+                if (number_start != number_end && flap >= 0 && flap < NUMBER_OF_FLAPS) {
+                    netconn_write(conn, http_resp_hdr_good, sizeof(http_resp_hdr_good)-1, NETCONN_NOCOPY);
+                    netconn_write(conn, http_resp_flap, sizeof(http_resp_flap)-1, NETCONN_NOCOPY);
+
+                    ESP_LOGI("cmd", "FLAP %d", flap);
+                    xTaskNotify(flap_task_h, flap, eSetValueWithOverwrite); 
+                    erroneous_request = false;                     
+                }
+            }
+
+        } else if (strncmp(instr, "GET /REBOOT", 11) == 0) {
+            netconn_write(conn, http_resp_hdr_good, sizeof(http_resp_hdr_good)-1, NETCONN_NOCOPY);
+            netconn_write(conn, http_resp_reboot, sizeof(http_resp_reboot)-1, NETCONN_NOCOPY);
+
+            ESP_LOGI("cmd", "REBOOT");
+            reboot = true;
+            erroneous_request = false;
+        }
+
+        if (erroneous_request) {
+            netconn_write(conn, http_resp_hdr_bad, sizeof(http_resp_hdr_bad)-1, NETCONN_NOCOPY);
+        }
+
+        
+
+        // strncpy(_mBuffer, buf, buflen);
+
+        /* Is this an HTTP GET command? (only check the first 5 chars, since
+        there are other formats for GET, and we're keeping it very simple )*/
+        /*printf("buffer = %s \n", buf);
+
+        if (buflen>=5 &&
+            buf[0]=='G' &&
+            buf[1]=='E' &&
+            buf[2]=='T' &&
+            buf[3]==' ' &&
+            buf[4]=='/' ) {
+              printf("buf[5] = %c\n", buf[5]);*/
+          /* Send the HTML header
+                 * subtract 1 from the size, since we dont send the \0 in the string
+                 * NETCONN_NOCOPY: our data is const static, so no need to copy it
+           */
+
+           /* netconn_write(conn, http_html_hdr, sizeof(http_html_hdr)-1, NETCONN_NOCOPY);
+            netconn_write(conn, http_index_hml, sizeof(http_index_hml)-1, NETCONN_NOCOPY);*/
+        //}
+    }
+    /* Close the connection (server closes in HTTP) */
+    netconn_close(conn);
+
+    /* Delete the buffer (netconn_recv gives us ownership,
+       so we have to make sure to deallocate the buffer) */
+    netbuf_delete(inbuf);
+
+    if (reboot) {
+        esp_restart();
+    }
+}
+
+
+static void http_server_task()
+{
+  struct netconn *conn, *newconn;
+  err_t err;
+  conn = netconn_new(NETCONN_TCP);
+  netconn_bind(conn, NULL, 80);
+  netconn_listen(conn);
+  do {
+     err = netconn_accept(conn, &newconn);
+     if (err == ERR_OK) {
+       http_server_netconn_serve(newconn);
+       netconn_delete(newconn);
+     }
+   } while(err == ERR_OK);
+   netconn_close(conn);
+   netconn_delete(conn);
+}
+
+
+
+void app_main()
+{
+    // initialize NVS
+    esp_err_t ret = nvs_flash_init();
+    if (ret == ESP_ERR_NVS_NO_FREE_PAGES) {
+        ESP_ERROR_CHECK(nvs_flash_erase());
+        ret = nvs_flash_init();
+    }
+    ESP_ERROR_CHECK( ret );
+
+    setup_bluetooth();
+    setup_wifi();
+
+
+    xTaskCreate(&flap_task, "flap_task", 2048, NULL, configMAX_PRIORITIES - 1, &flap_task_h);
+    xTaskCreate(&http_server_task, "http_server_task", 2048, NULL, 1, &http_server_task_h);
 }
 
 
@@ -323,13 +528,13 @@ void handle_command(char* cmd, char* arg1, char* arg2) {
         int flap = strtol(arg1, &ptr, 10);
 
         if (ptr != arg1 && flap >= 0 && flap < NUMBER_OF_FLAPS) {
-            printf("CMD: FLAP %d\n", flap);
-            flap_cmd = flap;
+            ESP_LOGI("cmd", "FLAP %d", flap);
+            xTaskNotify(flap_task_h, flap, eSetValueWithOverwrite);
         }
     }
 
     if (strcmp(cmd, "REBOOT") == 0) {
-        printf("CMD: REBOOT");
+        ESP_LOGI("cmd", "REBOOT");
         esp_restart();
     } 
 }

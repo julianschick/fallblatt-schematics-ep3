@@ -20,6 +20,11 @@ void command(char* cmd, char* arg1, char* arg2) {
 
 int main() {
 
+	char a[] = "GET /";
+	char b[] = "GET /";
+
+	printf("strncmp = %d", strncmp(a,b,5));
+
 	while(1) {
 		char c = getchar();
 

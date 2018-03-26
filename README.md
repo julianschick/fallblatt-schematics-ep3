@@ -17,9 +17,28 @@ Die Verdrahtung der Sensoren auf der Platine ist etwas eigenwillig. Beide Sensor
 
 ## Code
 
+### ESP32
 Der Code im Ordner /esp in diesem Repository ist für die ESP32-Plattform und steuert ein Fallblattmodul mit Hilfe der oben beschriebenen Pins an. Der Microcontroller unterstützt WLAN und Bluetooth, das Fallblattmodul kann per Bluetooth oder durch das Senden von HTTP-Requests an einen Webserver auf dem Controller angesteuert werden.
 
-Unter /android liegt eine App, die das Modul über seine Bluetooth-Schnittstelle kontaktiert und fernsteuert.
+### Android
+Unter /android liegt eine App, die das Modul über seine serielle Bluetooth-Schnittstelle kontaktiert und fernsteuert.
+
+### Befehle
+#### Bluetooth (serielle Schnittstelle)
+
+Befehl | Bedeutung
+------------ | -------------
+FLAP # | Springt zum Blatt #
+REBOOT | Neustart
+WIFI <SSID> <PASS> | Verbindet sich mit einem WLAN (Einstellungen bleiben nach dem Neustart erhalten)
+  
+#### HTTP-Server
+
+Seitenaufruf (GET) | Bedeutung
+------------ | -------------
+/FLAP/# | Springt zum Blatt #
+/REBOOT | Neustart
+
 
 ## Pinbelegung ZiLOG
 ![Pinbelegung](/images/zilog.png)

@@ -1,4 +1,5 @@
 #include "bluetooth.h"
+#include "esp_wifi.h"
 
 static void bluetooth_callback(esp_spp_cb_event_t event, esp_spp_cb_param_t *param);
 static bool parse_buffer();
@@ -126,7 +127,20 @@ static void handle_command(char* cmd, char* arg1, char* arg2) {
     if (strcmp(cmd, "REBOOT") == 0) {
         ESP_LOGI("cmd", "REBOOT");
         esp_restart();
-    } 
+    }
+
+    if (strcmp(cmd, "WIFI") == 0) {
+        ESP_LOGI("cmd", "WIFI SSID=%s", arg1);
+        ESP_LOGI("cmd", "WIFI Pass=%s", arg2);
+
+        wifi_config_t wifi_config;
+        strcpy((char*)wifi_config.sta.ssid, arg1);
+        strcpy((char*)wifi_config.sta.password, arg2);
+        
+        ESP_ERROR_CHECK(esp_wifi_set_config(ESP_IF_WIFI_STA, &wifi_config));
+    }
+
+
 }
 
 static bool parse_buffer() {

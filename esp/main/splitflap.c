@@ -12,10 +12,10 @@
 #include "tcpip_adapter.h"
 #include "esp_wifi.h"
 #include "esp_event_loop.h"
-#include "freertos/event_groups.h"
 
 #include "bluetooth.h"
 #include "httpserver.h"
+#include "httpclient.h"
 
 #define PIN_MOTOR 23
 #define PIN_HOME_SENSOR 21
@@ -42,11 +42,6 @@ int hsensor_ch_flag;
 #define RISING 1
 
 
-// WIFI
-static EventGroupHandle_t wifi_event_group;
-const int CONNECTED_BIT = BIT0;
-
-
 void setup_gpio() {
 	gpio_config_t io_conf;
     io_conf.intr_type = GPIO_PIN_INTR_DISABLE;
@@ -71,13 +66,13 @@ static esp_err_t event_handler(void *ctx, system_event_t *event)
         esp_wifi_connect();
         break;
     case SYSTEM_EVENT_STA_GOT_IP:
-        xEventGroupSetBits(wifi_event_group, CONNECTED_BIT);
+        xEventGroupSetBits(event_group, WIFI_CONNECTED_BIT);
         break;
     case SYSTEM_EVENT_STA_DISCONNECTED:
         /* This is a workaround as ESP32 WiFi libs don't currently
            auto-reassociate. */
         esp_wifi_connect();
-        xEventGroupClearBits(wifi_event_group, CONNECTED_BIT);
+        xEventGroupClearBits(event_group, WIFI_CONNECTED_BIT);
         break;
     default:
         break;
@@ -88,20 +83,20 @@ static esp_err_t event_handler(void *ctx, system_event_t *event)
 static void setup_wifi(void)
 {
     tcpip_adapter_init();
-    wifi_event_group = xEventGroupCreate();
+    
     ESP_ERROR_CHECK( esp_event_loop_init(event_handler, NULL) );
     wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
     ESP_ERROR_CHECK( esp_wifi_init(&cfg) );
-    ESP_ERROR_CHECK( esp_wifi_set_storage(WIFI_STORAGE_RAM) );
-    wifi_config_t wifi_config = {
+    //ESP_ERROR_CHECK( esp_wifi_set_storage(WIFI_STORAGE_RAM) );
+    /*wifi_config_t wifi_config = {
         .sta = {
             .ssid = "WLAN-150040",
-            .password = "9539638648597419",
+            .password = "9539638648597418",
         },
-    };
-    ESP_LOGI(TAG_WIFI, "Setting WiFi configuration SSID %s...", wifi_config.sta.ssid);
+    };*/
+    //ESP_LOGI(TAG_WIFI, "Setting WiFi configuration SSID %s...", wifi_config.sta.ssid);
     ESP_ERROR_CHECK( esp_wifi_set_mode(WIFI_MODE_STA) );
-    ESP_ERROR_CHECK( esp_wifi_set_config(ESP_IF_WIFI_STA, &wifi_config) );
+    //ESP_ERROR_CHECK( esp_wifi_set_config(ESP_IF_WIFI_STA, &wifi_config) );
     ESP_ERROR_CHECK( esp_wifi_start() );
 }
 
@@ -173,7 +168,6 @@ void flap_task() {
 
         if (xTaskNotifyWait(0, 0, &notificationValue, 0) == pdTRUE) {
             flap_cmd = notificationValue;            
-            ESP_LOGI("flap", "Received notification with value %d", notificationValue);
         }
 
         read_sensors();
@@ -252,10 +246,13 @@ void app_main()
     }
     ESP_ERROR_CHECK( ret );
 
+    event_group = xEventGroupCreate();
+
     setup_bluetooth();
     setup_wifi();
 
 
     xTaskCreate(&flap_task, "flap_task", 2048, NULL, configMAX_PRIORITIES - 1, &flap_task_h);
     xTaskCreate(&http_server_task, "http_server_task", 2048, NULL, 1, &http_server_task_h);
+    xTaskCreate(&http_client_task, "http_client_task", 4096, NULL, 1, &http_client_task_h);
 }

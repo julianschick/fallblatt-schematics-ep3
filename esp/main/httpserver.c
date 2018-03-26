@@ -1,7 +1,5 @@
 #include "httpserver.h"
 
-static void http_server_netconn_serve(struct netconn *conn);
-
 static void http_server_netconn_serve(struct netconn *conn)
 {
     struct netbuf *inbuf;
@@ -9,8 +7,6 @@ static void http_server_netconn_serve(struct netconn *conn)
     u16_t buflen;
     err_t err;
 
-    /* Read the data from the port, blocking if nothing yet there.
-    We assume the request (the part we care about) is in one netbuf */
     err = netconn_recv(conn, &inbuf);
 
     bool erroneous_request = true;
@@ -30,8 +26,13 @@ static void http_server_netconn_serve(struct netconn *conn)
                 int flap = strtol(number_start, &number_end, 10);
 
                 if (number_start != number_end && flap >= 0 && flap < NUMBER_OF_FLAPS) {
+                    char body[100];
+                    strcpy(body, http_resp_flap);
+                    body[32] = flap / 10 + 48;
+                    body[33] = flap % 10 + 48;
+
                     netconn_write(conn, http_resp_hdr_good, sizeof(http_resp_hdr_good)-1, NETCONN_NOCOPY);
-                    netconn_write(conn, http_resp_flap, sizeof(http_resp_flap)-1, NETCONN_NOCOPY);
+                    netconn_write(conn, body, sizeof(http_resp_flap)-1, NETCONN_NOCOPY);
 
                     ESP_LOGI("cmd", "FLAP %d", flap);
                     xTaskNotify(flap_task_h, flap, eSetValueWithOverwrite); 
@@ -51,43 +52,16 @@ static void http_server_netconn_serve(struct netconn *conn)
         if (erroneous_request) {
             netconn_write(conn, http_resp_hdr_bad, sizeof(http_resp_hdr_bad)-1, NETCONN_NOCOPY);
         }
-
         
-
-        // strncpy(_mBuffer, buf, buflen);
-
-        /* Is this an HTTP GET command? (only check the first 5 chars, since
-        there are other formats for GET, and we're keeping it very simple )*/
-        /*printf("buffer = %s \n", buf);
-
-        if (buflen>=5 &&
-            buf[0]=='G' &&
-            buf[1]=='E' &&
-            buf[2]=='T' &&
-            buf[3]==' ' &&
-            buf[4]=='/' ) {
-              printf("buf[5] = %c\n", buf[5]);*/
-          /* Send the HTML header
-                 * subtract 1 from the size, since we dont send the \0 in the string
-                 * NETCONN_NOCOPY: our data is const static, so no need to copy it
-           */
-
-           /* netconn_write(conn, http_html_hdr, sizeof(http_html_hdr)-1, NETCONN_NOCOPY);
-            netconn_write(conn, http_index_hml, sizeof(http_index_hml)-1, NETCONN_NOCOPY);*/
-        //}
     }
-    /* Close the connection (server closes in HTTP) */
-    netconn_close(conn);
 
-    /* Delete the buffer (netconn_recv gives us ownership,
-       so we have to make sure to deallocate the buffer) */
+    netconn_close(conn);
     netbuf_delete(inbuf);
 
     if (reboot) {
         esp_restart();
     }
 }
-
 
 void http_server_task() {
 

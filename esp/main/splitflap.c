@@ -248,6 +248,23 @@ void app_main()
 
     event_group = xEventGroupCreate();
 
+    nvs_handle nvs_h;
+    if (ESP_OK == nvs_open("http_pull", NVS_READONLY, &nvs_h)) {
+        
+        size_t server_len = sizeof(http_pull_server);
+        size_t address_len = sizeof(http_pull_address);
+
+        if (ESP_OK != nvs_get_str(nvs_h, "server", http_pull_server, &server_len)) {
+            strcpy(http_pull_server, "");
+        }
+
+        if (ESP_OK != nvs_get_str(nvs_h, "address", http_pull_address, &address_len)) {
+            strcpy(http_pull_address, "");    
+        }
+    }
+    ESP_LOGI("init", "srv=%s", http_pull_server);
+    ESP_LOGI("init", "adr=%s", http_pull_address);
+
     setup_bluetooth();
     setup_wifi();
 

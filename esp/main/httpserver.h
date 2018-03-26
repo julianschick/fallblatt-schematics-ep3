@@ -16,6 +16,8 @@ const static char http_resp_reboot[] =
     "<!DOCTYPE html><html><body>REBOOT</body></html>";
 const static char http_resp_flap[] = 
     "<!DOCTYPE html><html><body>FLAP XX</body></html>";
+const static char http_resp_pull[] = 
+    "<!DOCTYPE html><html><body>PULL</body></html>";
 
 
 void http_server_task();

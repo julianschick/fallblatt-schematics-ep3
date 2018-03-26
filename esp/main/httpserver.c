@@ -35,6 +35,7 @@ static void http_server_netconn_serve(struct netconn *conn)
                     netconn_write(conn, body, sizeof(http_resp_flap)-1, NETCONN_NOCOPY);
 
                     ESP_LOGI("cmd", "FLAP %d", flap);
+                    xEventGroupClearBits(event_group, HTTP_PULL_BIT);
                     xTaskNotify(flap_task_h, flap, eSetValueWithOverwrite); 
                     erroneous_request = false;                     
                 }
@@ -46,6 +47,14 @@ static void http_server_netconn_serve(struct netconn *conn)
 
             ESP_LOGI("cmd", "REBOOT");
             reboot = true;
+            erroneous_request = false;
+        } else if (strncmp(instr, "GET /PULL", 9) == 0) {
+            netconn_write(conn, http_resp_hdr_good, sizeof(http_resp_hdr_good)-1, NETCONN_NOCOPY);
+            netconn_write(conn, http_resp_pull, sizeof(http_resp_pull)-1, NETCONN_NOCOPY);
+
+            ESP_LOGI("cmd", "PULL");
+            xEventGroupSetBits(event_group, HTTP_PULL_BIT);
+
             erroneous_request = false;
         }
 

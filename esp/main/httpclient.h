@@ -1,5 +1,5 @@
-#ifndef HTTPSERVER_H_INCLUDED
-#define HTTPSERVER_H_INCLUDED
+#ifndef HTTPCLIENT_H_INCLUDED
+#define HTTPCLIENT_H_INCLUDED
 
 #include "globals.h"
 
@@ -11,4 +11,4 @@
 
 void http_client_task();
 
-#endif //HTTPSERVER_H_INCLUDED
+#endif //HTTPCLIENT_H_INCLUDED

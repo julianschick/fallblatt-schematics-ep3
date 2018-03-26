@@ -1,5 +1,8 @@
 #include "bluetooth.h"
+
 #include "esp_wifi.h"
+#include "nvs.h"
+#include "nvs_flash.h"
 
 static void bluetooth_callback(esp_spp_cb_event_t event, esp_spp_cb_param_t *param);
 static bool parse_buffer();
@@ -120,16 +123,13 @@ static void handle_command(char* cmd, char* arg1, char* arg2) {
 
         if (ptr != arg1 && flap >= 0 && flap < NUMBER_OF_FLAPS) {
             ESP_LOGI("cmd", "FLAP %d", flap);
+            xEventGroupClearBits(event_group, HTTP_PULL_BIT);
             xTaskNotify(flap_task_h, flap, eSetValueWithOverwrite);
         }
-    }
-
-    if (strcmp(cmd, "REBOOT") == 0) {
+    } else if (strcmp(cmd, "REBOOT") == 0) {
         ESP_LOGI("cmd", "REBOOT");
         esp_restart();
-    }
-
-    if (strcmp(cmd, "WIFI") == 0) {
+    } else if (strcmp(cmd, "WIFI") == 0) {
         ESP_LOGI("cmd", "WIFI SSID=%s", arg1);
         ESP_LOGI("cmd", "WIFI Pass=%s", arg2);
 
@@ -138,6 +138,23 @@ static void handle_command(char* cmd, char* arg1, char* arg2) {
         strcpy((char*)wifi_config.sta.password, arg2);
         
         ESP_ERROR_CHECK(esp_wifi_set_config(ESP_IF_WIFI_STA, &wifi_config));
+    } else if (strcmp(cmd, "PULL") == 0) {
+        ESP_LOGI("cmd", "PULL");
+        xEventGroupSetBits(event_group, HTTP_PULL_BIT);
+    } else if (strcmp(cmd, "CONFIGPULL") == 0) {
+        ESP_LOGI("cmd", "CONFIGPULL Server=%s", arg1);
+        ESP_LOGI("cmd", "CONFIGPULL Address=%s", arg2);
+
+        strcpy(http_pull_server, arg1);
+        strcpy(http_pull_address, arg2);
+
+        nvs_handle nvs_h;
+        if (ESP_OK == nvs_open("http_pull", NVS_READWRITE, &nvs_h)) {
+            ESP_ERROR_CHECK(nvs_set_str(nvs_h, "server", http_pull_server));
+            ESP_ERROR_CHECK(nvs_set_str(nvs_h, "address", http_pull_address));
+            ESP_ERROR_CHECK(nvs_commit(nvs_h));
+            ESP_LOGI(TAG_BT, "committed");
+        }
     }
 
 

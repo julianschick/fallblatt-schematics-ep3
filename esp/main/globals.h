@@ -25,13 +25,21 @@ TaskHandle_t http_client_task_h;
 #define TAG_WIFI "wifiU"
 #define TAG_BT "bluetooth"
 #define TAG_HTTP "http"
+#define TAG_HTTP_CLIENT "httpclient"
 
 //Settings
 #define NUMBER_OF_FLAPS 40
 
 // Event group for task sync
 EventGroupHandle_t event_group;
-const int WIFI_CONNECTED_BIT = BIT0;
+static const int WIFI_CONNECTED_BIT = BIT0;
+static const int HTTP_PULL_BIT = BIT1;
+
+// HTTP pull settings
+char http_pull_server[64];
+char http_pull_address[64];
+
+
 
 
 #endif //GLOBALS_H_INCLUDED

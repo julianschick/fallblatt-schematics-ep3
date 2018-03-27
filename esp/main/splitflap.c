@@ -16,6 +16,7 @@
 #include "bluetooth.h"
 #include "httpserver.h"
 #include "httpclient.h"
+#include "nvsutil.h"
 
 #define PIN_MOTOR 23
 #define PIN_HOME_SENSOR 21
@@ -238,38 +239,18 @@ void flap_task() {
 
 void app_main()
 {
-    // initialize NVS
-    esp_err_t ret = nvs_flash_init();
-    if (ret == ESP_ERR_NVS_NO_FREE_PAGES) {
-        ESP_ERROR_CHECK(nvs_flash_erase());
-        ret = nvs_flash_init();
-    }
-    ESP_ERROR_CHECK( ret );
-
+    setup_nvs();
+    
     event_group = xEventGroupCreate();
 
-    nvs_handle nvs_h;
-    if (ESP_OK == nvs_open("http_pull", NVS_READONLY, &nvs_h)) {
-        
-        size_t server_len = sizeof(http_pull_server);
-        size_t address_len = sizeof(http_pull_address);
-
-        if (ESP_OK != nvs_get_str(nvs_h, "server", http_pull_server, &server_len)) {
-            strcpy(http_pull_server, "");
-        }
-
-        if (ESP_OK != nvs_get_str(nvs_h, "address", http_pull_address, &address_len)) {
-            strcpy(http_pull_address, "");    
-        }
-    }
-    ESP_LOGI("init", "srv=%s", http_pull_server);
-    ESP_LOGI("init", "adr=%s", http_pull_address);
+    restore_http_pull_data();
+    restore_http_pull_bit();
 
     setup_bluetooth();
     setup_wifi();
 
 
     xTaskCreate(&flap_task, "flap_task", 2048, NULL, configMAX_PRIORITIES - 1, &flap_task_h);
-    xTaskCreate(&http_server_task, "http_server_task", 2048, NULL, 1, &http_server_task_h);
+    xTaskCreate(&http_server_task, "http_server_task", 4096, NULL, 1, &http_server_task_h);
     xTaskCreate(&http_client_task, "http_client_task", 4096, NULL, 1, &http_client_task_h);
 }

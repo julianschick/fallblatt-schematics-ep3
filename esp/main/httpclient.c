@@ -1,14 +1,6 @@
 #include "httpclient.h"
 
-//#define WEB_SERVER "192.168.2.102"
-//#define WEB_PORT 80
-//#define WEB_URL "/index.php"
-
-/*static const char *REQUEST = 
-    "GET " WEB_URL " HTTP/1.1\r\n"
-    "Host: "WEB_SERVER"\r\n"
-    "User-Agent: esp32/splitflap\r\n"
-    "Accept: */
+#define PERIODICITY 60 //in seconds
 
 static const char *REQUEST_PART1 = 
     " HTTP/1.1\r\n"
@@ -33,19 +25,30 @@ void http_client_task()
     char recv_buf[64];
 
     while(1) {
-        /* Wait for the callback to set the CONNECTED_BIT in the
-           event group.
-        */
-        EventBits_t uxBits = xEventGroupWaitBits(
-            event_group, 
-            WIFI_CONNECTED_BIT | HTTP_PULL_BIT, 
-            false, 
-            true, 
-            0
-        );
 
-        ESP_LOGI(TAG_HTTP_CLIENT, "server=%s", http_pull_server);
-        ESP_LOGI(TAG_HTTP_CLIENT, "address=%s", http_pull_address);
+        EventBits_t uxBits = xEventGroupGetBits(event_group);
+
+        if ((uxBits & (WIFI_CONNECTED_BIT | HTTP_PULL_BIT)) == (WIFI_CONNECTED_BIT | HTTP_PULL_BIT)) {
+
+            vTaskDelay(PERIODICITY*1000 / portTICK_PERIOD_MS);
+            uxBits = xEventGroupGetBits(event_group);           
+
+        } else {
+
+            uxBits = xEventGroupWaitBits(
+                event_group, 
+                WIFI_CONNECTED_BIT | HTTP_PULL_BIT, 
+                false, 
+                true, 
+                PERIODICITY*1000 / portTICK_PERIOD_MS
+            );
+        }
+
+        
+        
+        ESP_LOGI(TAG_HTTP_CLIENT, "HTTP pull timer fired");
+        ESP_LOGI(TAG_HTTP_CLIENT, "http_pull_server = %s", http_pull_server);
+        ESP_LOGI(TAG_HTTP_CLIENT, "http_pull_address = %s", http_pull_address);
 
         if (((uxBits & (WIFI_CONNECTED_BIT | HTTP_PULL_BIT)) == (WIFI_CONNECTED_BIT | HTTP_PULL_BIT)) &&
             strlen(http_pull_server) > 0 && strlen(http_pull_address) > 0) {
@@ -56,17 +59,15 @@ void http_client_task()
             strcat(REQUEST, REQUEST_PART1);
             strcat(REQUEST, http_pull_server);
             strcat(REQUEST, REQUEST_PART2);
-            ESP_LOGI(TAG_HTTP_CLIENT, "%s", REQUEST);
-
+            
             int err = getaddrinfo(http_pull_server, "80", &hints, &res);
 
             if(err != 0 || res == NULL) {
                 ESP_LOGE(TAG_HTTP_CLIENT, "DNS lookup failed err=%d res=%p", err, res);
-                continue;
+                goto end_of_loop;
             }
 
             /* Code to print the resolved IP.
-
                Note: inet_ntoa is non-reentrant, look at ipaddr_ntoa_r for "real" code */
             addr = &((struct sockaddr_in *)res->ai_addr)->sin_addr;
             ESP_LOGI(TAG_HTTP_CLIENT, "DNS lookup succeeded. IP=%s", inet_ntoa(*addr));
@@ -75,7 +76,7 @@ void http_client_task()
             if(s < 0) {
                 ESP_LOGE(TAG_HTTP_CLIENT, "... Failed to allocate socket.");
                 freeaddrinfo(res);
-                continue;
+                goto end_of_loop;
             }
             ESP_LOGI(TAG_HTTP_CLIENT, "... allocated socket");
 
@@ -83,7 +84,7 @@ void http_client_task()
                 ESP_LOGE(TAG_HTTP_CLIENT, "... socket connect failed errno=%d", errno);
                 close(s);
                 freeaddrinfo(res);
-                continue;
+                goto end_of_loop;
             }
 
             ESP_LOGI(TAG_HTTP_CLIENT, "... connected");
@@ -92,7 +93,7 @@ void http_client_task()
             if (write(s, REQUEST, strlen(REQUEST)) < 0) {
                 ESP_LOGE(TAG_HTTP_CLIENT, "... socket send failed");
                 close(s);
-                continue;
+                goto end_of_loop;
             }
             ESP_LOGI(TAG_HTTP_CLIENT, "... socket send success");
 
@@ -103,7 +104,7 @@ void http_client_task()
                     sizeof(receiving_timeout)) < 0) {
                 ESP_LOGE(TAG_HTTP_CLIENT, "... failed to set socket receiving timeout");
                 close(s);
-                continue;
+                goto end_of_loop;;
             }
             ESP_LOGI(TAG_HTTP_CLIENT, "... set socket receiving timeout success");
 
@@ -139,8 +140,9 @@ void http_client_task()
             ESP_LOGI(TAG_HTTP_CLIENT, "Not connected to AP or HTTP pull disabled");
         }
 
-        vTaskDelay(60*1000 / portTICK_PERIOD_MS);
+        end_of_loop:
 
-        ESP_LOGI(TAG_HTTP_CLIENT, "Starting again!");
+        vTaskDelay(1);
+        //vTaskDelay(60*1000 / portTICK_PERIOD_MS);
     }
 }

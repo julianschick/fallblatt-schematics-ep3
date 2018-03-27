@@ -1,4 +1,5 @@
 #include "httpserver.h"
+#include "nvsutil.h"
 
 static void http_server_netconn_serve(struct netconn *conn)
 {
@@ -17,7 +18,7 @@ static void http_server_netconn_serve(struct netconn *conn)
 
         char instr[buflen+1];
         memcpy(instr, buf, buflen);
-        instr[buflen] = 0x00;
+        instr[buflen] = 0;
 
         if (strncmp(instr, "GET /FLAP/", 10) == 0) {
             if (strlen(instr) > 10) {
@@ -37,6 +38,7 @@ static void http_server_netconn_serve(struct netconn *conn)
                     ESP_LOGI("cmd", "FLAP %d", flap);
                     xEventGroupClearBits(event_group, HTTP_PULL_BIT);
                     xTaskNotify(flap_task_h, flap, eSetValueWithOverwrite); 
+                    store_http_pull_bit();
                     erroneous_request = false;                     
                 }
             }
@@ -54,6 +56,7 @@ static void http_server_netconn_serve(struct netconn *conn)
 
             ESP_LOGI("cmd", "PULL");
             xEventGroupSetBits(event_group, HTTP_PULL_BIT);
+            store_http_pull_bit();
 
             erroneous_request = false;
         }

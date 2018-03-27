@@ -26,6 +26,7 @@ TaskHandle_t http_client_task_h;
 #define TAG_BT "bluetooth"
 #define TAG_HTTP "http"
 #define TAG_HTTP_CLIENT "httpclient"
+#define TAG_NVS "nvs"
 
 //Settings
 #define NUMBER_OF_FLAPS 40

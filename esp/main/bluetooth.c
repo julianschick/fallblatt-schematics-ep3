@@ -1,8 +1,7 @@
 #include "bluetooth.h"
 
+#include "nvsutil.h"
 #include "esp_wifi.h"
-#include "nvs.h"
-#include "nvs_flash.h"
 
 static void bluetooth_callback(esp_spp_cb_event_t event, esp_spp_cb_param_t *param);
 static bool parse_buffer();
@@ -125,6 +124,7 @@ static void handle_command(char* cmd, char* arg1, char* arg2) {
             ESP_LOGI("cmd", "FLAP %d", flap);
             xEventGroupClearBits(event_group, HTTP_PULL_BIT);
             xTaskNotify(flap_task_h, flap, eSetValueWithOverwrite);
+            store_http_pull_bit();
         }
     } else if (strcmp(cmd, "REBOOT") == 0) {
         ESP_LOGI("cmd", "REBOOT");
@@ -141,6 +141,7 @@ static void handle_command(char* cmd, char* arg1, char* arg2) {
     } else if (strcmp(cmd, "PULL") == 0) {
         ESP_LOGI("cmd", "PULL");
         xEventGroupSetBits(event_group, HTTP_PULL_BIT);
+        store_http_pull_bit();
     } else if (strcmp(cmd, "CONFIGPULL") == 0) {
         ESP_LOGI("cmd", "CONFIGPULL Server=%s", arg1);
         ESP_LOGI("cmd", "CONFIGPULL Address=%s", arg2);
@@ -148,13 +149,7 @@ static void handle_command(char* cmd, char* arg1, char* arg2) {
         strcpy(http_pull_server, arg1);
         strcpy(http_pull_address, arg2);
 
-        nvs_handle nvs_h;
-        if (ESP_OK == nvs_open("http_pull", NVS_READWRITE, &nvs_h)) {
-            ESP_ERROR_CHECK(nvs_set_str(nvs_h, "server", http_pull_server));
-            ESP_ERROR_CHECK(nvs_set_str(nvs_h, "address", http_pull_address));
-            ESP_ERROR_CHECK(nvs_commit(nvs_h));
-            ESP_LOGI(TAG_BT, "committed");
-        }
+        store_http_pull_data();
     }
 
 

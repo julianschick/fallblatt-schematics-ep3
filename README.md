@@ -15,9 +15,30 @@ Damit der Motor weiß, wann er anhalten soll, sind zwei Infrarot-Transmitter mit
 
 Die Verdrahtung der Sensoren auf der Platine ist etwas eigenwillig. Beide Sensoren gehen auf den gleichen Eingang (Sensor IN), an dem mit Hilfe eines ADC die anliegende Spannung messen kann. Um die Sensoren einzeln abfragen zu können, kann man die Sensoren getrennt mit Spannung versorgen (Sensor 1 / Sensor 2) und dann jeweils nur den Sensor auslesen, der mit Spannung versorgt wird. Der Motor ist einfach anzusteuern: Zieht man den Motor-Pin auf LOW, läuft der Motor los, zieht man ihn auf HIGH (3,3V oder 5V), bleibt der Motor stehen.
 
-## ESP32
+## Code
 
-Der Code in diesem Repository ist für die ESP32-Plattform und steuert ein Fallblattmodul mit Hilfe der oben beschriebenen Pins an. Der Microcontroller unterstützt WLAN und Bluetooth, das Fallblattmodul kann per Bluetooth oder über senden von HTTP-Requests an einen Webserver auf dem Controller angesteuert werden.
+### ESP32
+Der Code im Ordner /esp in diesem Repository ist für die ESP32-Plattform und steuert ein Fallblattmodul mit Hilfe der oben beschriebenen Pins an. Der Microcontroller unterstützt WLAN und Bluetooth, das Fallblattmodul kann per Bluetooth oder durch das Senden von HTTP-Requests an einen Webserver auf dem Controller angesteuert werden.
+
+### Android
+Unter /android liegt eine App, die das Modul über seine serielle Bluetooth-Schnittstelle kontaktiert und fernsteuert.
+
+### Befehle
+#### Bluetooth (serielle Schnittstelle)
+
+Befehl | Bedeutung
+------------ | -------------
+FLAP # | Springt zum Blatt #
+REBOOT | Neustart
+WIFI <SSID> <PASS> | Verbindet sich mit einem WLAN (Einstellungen bleiben nach dem Neustart erhalten)
+  
+#### HTTP-Server
+
+Seitenaufruf (GET) | Bedeutung
+------------ | -------------
+/FLAP/# | Springt zum Blatt #
+/REBOOT | Neustart
+
 
 ## Pinbelegung ZiLOG
 ![Pinbelegung](/images/zilog.png)

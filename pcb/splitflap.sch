@@ -445,17 +445,6 @@ Text Label 9000 3000 0    60   ~ 0
 MOTOR5
 Text Label 9000 3400 0    60   ~ 0
 MOTOR6
-$Comp
-L GND #PWR017
-U 1 1 5AC032F5
-P 9000 3800
-F 0 "#PWR017" H 9000 3550 50  0001 C CNN
-F 1 "GND" H 9000 3650 50  0000 C CNN
-F 2 "" H 9000 3800 50  0001 C CNN
-F 3 "" H 9000 3800 50  0001 C CNN
-	1    9000 3800
-	1    0    0    -1  
-$EndComp
 Text Label 9000 3100 0    60   ~ 0
 SENSOR_IN_5
 Text Label 9000 3500 0    60   ~ 0
@@ -706,7 +695,7 @@ Wire Wire Line
 Wire Wire Line
 	10350 3700 9000 3700
 Wire Wire Line
-	10350 3800 9000 3800
+	7150 3800 10350 3800
 Connection ~ 5500 4000
 Connection ~ 5500 4100
 Connection ~ 3600 2900
@@ -746,4 +735,7 @@ Text Label 6500 2200 0    60   ~ 0
 GND_ESP
 Text Label 6500 1950 0    60   ~ 0
 +3.3V_ESP
+Wire Wire Line
+	7150 2200 7150 3800
+Connection ~ 7150 2200
 $EndSCHEMATC

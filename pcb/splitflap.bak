@@ -743,7 +743,7 @@ Wire Wire Line
 	7250 1950 3800 1950
 Connection ~ 3800 1950
 Text Label 6500 2200 0    60   ~ 0
-GND_BKN
+GND_ESP
 Text Label 6500 1950 0    60   ~ 0
-+3.3V_BKN
++3.3V_ESP
 $EndSCHEMATC

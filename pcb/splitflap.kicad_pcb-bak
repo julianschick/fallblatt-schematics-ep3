@@ -15,7 +15,7 @@
   (page A4)
   (layers
     (0 F.Cu signal)
-    (31 B.Cu signal)
+    (31 B.Cu signal hide)
     (32 B.Adhes user)
     (33 F.Adhes user)
     (34 B.Paste user)
@@ -2467,7 +2467,7 @@
       (net 51 /GND_ESP) (zone_connect 2))
   )
 
-  (module special:VIA-0.6mm (layer F.Cu) (tedit 5AD495F5) (tstamp 5AE70B6F)
+  (module special:VIA-0.6mm (layer F.Cu) (tedit 5AD49CB5) (tstamp 5AE70B6F)
     (at 152.3 129.2)
     (fp_text reference REF** (at 0 1) (layer F.SilkS) hide
       (effects (font (size 1 1) (thickness 0.15)))
@@ -2476,10 +2476,10 @@
       (effects (font (size 1 1) (thickness 0.15)))
     )
     (pad 1 thru_hole circle (at 0 0) (size 0.6 0.6) (drill 0.4) (layers *.Cu)
-      (zone_connect 2))
+      (net 51 /GND_ESP) (zone_connect 2))
   )
 
-  (module special:VIA-0.6mm (layer F.Cu) (tedit 5AD495F5) (tstamp 5AE70B78)
+  (module special:VIA-0.6mm (layer F.Cu) (tedit 5AD49CC3) (tstamp 5AE70B78)
     (at 152.2 134)
     (fp_text reference REF** (at 0 1) (layer F.SilkS) hide
       (effects (font (size 1 1) (thickness 0.15)))
@@ -2488,10 +2488,10 @@
       (effects (font (size 1 1) (thickness 0.15)))
     )
     (pad 1 thru_hole circle (at 0 0) (size 0.6 0.6) (drill 0.4) (layers *.Cu)
-      (zone_connect 2))
+      (net 51 /GND_ESP) (zone_connect 2))
   )
 
-  (module special:VIA-0.6mm (layer F.Cu) (tedit 5AD495F5) (tstamp 5AE70B82)
+  (module special:VIA-0.6mm (layer F.Cu) (tedit 5AD49CBC) (tstamp 5AE70B82)
     (at 150.1 134)
     (fp_text reference REF** (at 0 1) (layer F.SilkS) hide
       (effects (font (size 1 1) (thickness 0.15)))
@@ -2500,7 +2500,7 @@
       (effects (font (size 1 1) (thickness 0.15)))
     )
     (pad 1 thru_hole circle (at 0 0) (size 0.6 0.6) (drill 0.4) (layers *.Cu)
-      (zone_connect 2))
+      (net 51 /GND_ESP) (zone_connect 2))
   )
 
   (gr_line (start 194.8 45.8) (end 194.8 135.8) (angle 90) (layer Edge.Cuts) (width 0.1))

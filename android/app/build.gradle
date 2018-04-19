@@ -9,7 +9,7 @@ android {
             storePassword 'julix305'
         }
     }
-    compileSdkVersion 26
+    compileSdkVersion 22
     defaultConfig {
         applicationId "org.julian.splitflap"
         minSdkVersion 14

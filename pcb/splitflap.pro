@@ -1,4 +1,4 @@
-update=Do 29 Mär 2018 02:17:15 CEST
+update=Sa 31 Mär 2018 15:49:07 CEST
 version=1
 last_client=kicad
 [pcbnew]
@@ -27,7 +27,7 @@ NetIExt=net
 version=1
 [eeschema]
 version=1
-LibDir=
+LibDir=/usr/share/kicad/library
 [eeschema/libraries]
 LibName1=splitflap-rescue
 LibName2=power
@@ -62,5 +62,3 @@ LibName30=opto
 LibName31=atmel
 LibName32=contrib
 LibName33=valves
-LibName34=/home/julian/tmp/kicad/ESP32-Footprints/ESP32-footprints-Shem-Lib
-LibName35=/home/julian/tmp/kicad/ESP32-Footprints/espressif-xess

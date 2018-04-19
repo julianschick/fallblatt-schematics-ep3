@@ -40,15 +40,15 @@ public class MainActivity extends AppCompatActivity {
                 "Position 5 (leer)",
                 "Position 6 (leer)",
                 "Position 7 (leer)",
-                "5 Minuten später",
-                "10 Minuten später",
-                "15 Minuten später",
-                "20 Minuten später",
-                "25 Minuten später",
-                "30 Minuten später",
-                "40 Minuten später",
-                "50 Minuten später",
-                "60 Minuten später",
+                "ca 5 Minuten später",
+                "ca 10 Minuten später",
+                "ca 15 Minuten später",
+                "ca 20 Minuten später",
+                "ca 25 Minuten später",
+                "ca 30 Minuten später",
+                "ca 40 Minuten später",
+                "ca 50 Minuten später",
+                "ca 60 Minuten später",
                 "über 60 Minuten später",
                 "unbestimmt verspätet",
                 "Zug fällt aus",
@@ -92,12 +92,7 @@ public class MainActivity extends AppCompatActivity {
         findViewById(R.id.rebootButton).setOnClickListener(new AdapterView.OnClickListener() {
             @Override
             public void onClick(View view) {
-                //sendCommandViaBluetooth("REBOOT\n");
-                if (btSocket.isConnected()) {
-                    Log.i("bt", "connected");
-                } else {
-                    Log.i("bt", "not connected");
-                }
+                sendCommandBT("REBOOT\n");
             }
         });
 
@@ -121,7 +116,7 @@ public class MainActivity extends AppCompatActivity {
                 while(!terminated) {
 
                     synchronized (btLock) {
-                        if (true || isConnectedBT()) {
+                        if (isConnectedBT()) {
                             try {
                                 btWriter.write("NOP\n");
                                 Log.i("check alive", "alive");

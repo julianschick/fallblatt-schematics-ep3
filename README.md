@@ -26,11 +26,23 @@ Unter /android liegt eine App, die das Modul über seine serielle Bluetooth-Schn
 ### Befehle
 #### Bluetooth (serielle Schnittstelle)
 
-Befehl | Bedeutung
------------- | -------------
-FLAP # | Springt zum Blatt #
-REBOOT | Neustart
-WIFI <SSID> <PASS> | Verbindet sich mit einem WLAN (Einstellungen bleiben nach dem Neustart erhalten)
+Befehl | Bedeutung | Antwort
+------------ | ------- | ------
+WHOAREYOU | Ping | SPLITFLAP
+FLAP # | Springt zum Blatt # | FLAP # oder INVALID COMMAND
+REBOOT | Neustart | REBOOT
+SETWIFI [SSID] [PASS] | Verbindet sich mit einem WLAN (Einstellungen bleiben nach dem Neustart erhalten) | WIFI [SSID] [PASS] oder COMMAND EXECUTION FAILED
+GETWIFI | Gibt die WLAN-Einstellungen zurück | WIFI [SSID] [PASS]
+PULL | Aktiviert den Pull-Modus (Deaktivierung durch Sprung zu festem Blatt) | PULL
+GETPULLSTATUS | Status des Pull-Modus | [B1] [B2] (B1 und B2 sind entweder 0 oder 1, B1 = Pull-Modus aktiv, B2 = WLAN verbunden)
+SETPULLSERVER [SRV] [ADR] | Setzt den Server für den Pull-Modus | SERVER [SRV] [ADR]
+GETPULLSERVER | Gibt den eingestellten Server für den Pull-Modus zurück | SERVER [SRV] [ADR]
+  
+Falls keines der obigen Kommandos erkannt werden konnte, wird UNKNOWN COMMAND zurückgegeben. Jedes Kommando muss (nur) mit einem Zeilenumbruch (0x0A) abgeschlossen werden. Genauso werden die Antworten so terminiert.
+
+Der Pull-Modus holt sich eine Textdatei von einem Server und parst diese. Es wird erwartet, dass in dieser Datei
+lediglich eine Zahl steht, die das anzusteuernde Blatt angibt. Möchte man z. B. von http://testserver.to/test.php das anzusteuernde Blatt holen, so setzt man <SRV> = testserver.to und <ADR> = /test.php
+
   
 #### HTTP-Server
 

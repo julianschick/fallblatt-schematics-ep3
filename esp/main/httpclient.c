@@ -47,8 +47,8 @@ void http_client_task()
         
         
         ESP_LOGI(TAG_HTTP_CLIENT, "HTTP pull timer fired");
-        ESP_LOGI(TAG_HTTP_CLIENT, "http_pull_server = %s", http_pull_server);
-        ESP_LOGI(TAG_HTTP_CLIENT, "http_pull_address = %s", http_pull_address);
+        //ESP_LOGI(TAG_HTTP_CLIENT, "http_pull_server = %s", http_pull_server);
+        //ESP_LOGI(TAG_HTTP_CLIENT, "http_pull_address = %s", http_pull_address);
 
         if (((uxBits & (WIFI_CONNECTED_BIT | HTTP_PULL_BIT)) == (WIFI_CONNECTED_BIT | HTTP_PULL_BIT)) &&
             strlen(http_pull_server) > 0 && strlen(http_pull_address) > 0) {
@@ -121,11 +121,16 @@ void http_client_task()
                 }*/
             } while(r > 0);
 
+            ESP_LOGI(TAG_HTTP_CLIENT, "rbefore = %d", rbefore);
+            ESP_LOGI(TAG_HTTP_CLIENT, "r = %d", r);
+
             if (rbefore > 2) {
                 recv_buf[rbefore] = 0;
                 char* number_start = recv_buf + rbefore - 2;
                 char* number_end;
                 int flap = strtol(number_start, &number_end, 10);
+
+                ESP_LOGI(TAG_HTTP_CLIENT, "buf = %s", recv_buf);                
 
                 if (number_start != number_end && flap >= 0 && flap < NUMBER_OF_FLAPS) {
                     ESP_LOGI("cmd", "FLAP %d", flap);
@@ -137,7 +142,16 @@ void http_client_task()
             close(s);
 
         } else {
-            ESP_LOGI(TAG_HTTP_CLIENT, "Not connected to AP or HTTP pull disabled");
+            if ((uxBits & WIFI_CONNECTED_BIT) == 0) {
+                ESP_LOGI(TAG_HTTP_CLIENT, "Not connected to AP");    
+            }
+            if ((uxBits & HTTP_PULL_BIT) == 0) {
+                ESP_LOGI(TAG_HTTP_CLIENT, "HTTP pull disabled");       
+            }
+            if (strlen(http_pull_server) == 0 || strlen(http_pull_address) == 0) {
+                ESP_LOGI(TAG_HTTP_CLIENT, "HTTP pull not configured.");          
+            }
+            
         }
 
         end_of_loop:

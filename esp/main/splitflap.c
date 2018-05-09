@@ -19,8 +19,8 @@
 #include "nvsutil.h"
 
 #define PIN_MOTOR 23
-#define PIN_HOME_SENSOR 21
-#define PIN_FLAP_SENSOR 19
+#define PIN_HOME_SENSOR 19
+#define PIN_FLAP_SENSOR 21
 #define CH_SENSOR_INPUT (adc1_channel_t) ADC_CHANNEL_0
 
 
@@ -89,12 +89,6 @@ static void setup_wifi(void)
     wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
     ESP_ERROR_CHECK( esp_wifi_init(&cfg) );
     //ESP_ERROR_CHECK( esp_wifi_set_storage(WIFI_STORAGE_RAM) );
-    /*wifi_config_t wifi_config = {
-        .sta = {
-            .ssid = "WLAN-150040",
-            .password = "9539638648597418",
-        },
-    };*/
     //ESP_LOGI(TAG_WIFI, "Setting WiFi configuration SSID %s...", wifi_config.sta.ssid);
     ESP_ERROR_CHECK( esp_wifi_set_mode(WIFI_MODE_STA) );
     //ESP_ERROR_CHECK( esp_wifi_set_config(ESP_IF_WIFI_STA, &wifi_config) );

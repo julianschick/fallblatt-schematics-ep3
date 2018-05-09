@@ -3,6 +3,8 @@
 #include "nvsutil.h"
 #include "esp_wifi.h"
 
+static uint32_t client = 0;
+
 static void bluetooth_callback(esp_spp_cb_event_t event, esp_spp_cb_param_t *param);
 static bool parse_buffer();
 static void handle_command(char* cmd, char* arg1, char* arg2);
@@ -52,6 +54,7 @@ static void bluetooth_callback(esp_spp_cb_event_t event, esp_spp_cb_param_t *par
         ESP_LOGI(TAG_BT, "ESP_SPP_OPEN_EVT");
         break;
     case ESP_SPP_CLOSE_EVT:
+        client = 0;
         ESP_LOGI(TAG_BT, "ESP_SPP_CLOSE_EVT");
         break;
     case ESP_SPP_START_EVT:
@@ -68,6 +71,7 @@ static void bluetooth_callback(esp_spp_cb_event_t event, esp_spp_cb_param_t *par
         ESP_LOGI(TAG_BT, "ESP_SPP_WRITE_EVT");
         break;
     case ESP_SPP_SRV_OPEN_EVT:
+        client = param->open.handle;
         ESP_LOGI(TAG_BT, "ESP_SPP_SRV_OPEN_EVT");
         break;
         
@@ -116,7 +120,17 @@ void setup_bluetooth() {
 
 
 static void handle_command(char* cmd, char* arg1, char* arg2) {
-    if (strcmp(cmd, "FLAP") == 0) {
+
+    char response[64];
+    response[0] = 0;
+
+    if (strcmp(cmd, "WHOAREYOU") == 0) {
+
+        ESP_LOGI("cmd", "WHOAREYOU");
+        strcpy(response, "SPLITFLAP\n");
+
+    } else if (strcmp(cmd, "FLAP") == 0) {
+        
         char* ptr;
         int flap = strtol(arg1, &ptr, 10);
 
@@ -125,11 +139,20 @@ static void handle_command(char* cmd, char* arg1, char* arg2) {
             xEventGroupClearBits(event_group, HTTP_PULL_BIT);
             xTaskNotify(flap_task_h, flap, eSetValueWithOverwrite);
             store_http_pull_bit();
+
+            sprintf(response, "FLAP %d\n", flap);
+        } else {
+            strcpy(response, "INVALID COMMAND\n");
         }
+
     } else if (strcmp(cmd, "REBOOT") == 0) {
+
         ESP_LOGI("cmd", "REBOOT");
+        strcpy(response, "REBOOT\n");
         esp_restart();
-    } else if (strcmp(cmd, "WIFI") == 0) {
+
+
+    } else if (strcmp(cmd, "SETWIFI") == 0) {
         ESP_LOGI("cmd", "WIFI SSID=%s", arg1);
         ESP_LOGI("cmd", "WIFI Pass=%s", arg2);
 
@@ -137,12 +160,44 @@ static void handle_command(char* cmd, char* arg1, char* arg2) {
         strcpy((char*)wifi_config.sta.ssid, arg1);
         strcpy((char*)wifi_config.sta.password, arg2);
         
-        ESP_ERROR_CHECK(esp_wifi_set_config(ESP_IF_WIFI_STA, &wifi_config));
+        if (esp_wifi_set_config(ESP_IF_WIFI_STA, &wifi_config) == ESP_OK) {
+
+            wifi_config_t actual_wifi_config;
+            esp_wifi_get_config(ESP_IF_WIFI_STA, &actual_wifi_config);
+
+            sprintf(response, "WIFI %s %s\n", actual_wifi_config.sta.ssid, actual_wifi_config.sta.password);
+
+        } else {
+            strcpy(response, "COMMAND EXECUTION FAILED\n");
+        }
+
+        sprintf(response, "WIFI %s %s\n", arg1, arg2);
+
+    } else if (strcmp(cmd, "GETWIFI") == 0) {
+
+        wifi_config_t wifi_config;
+        esp_wifi_get_config(ESP_IF_WIFI_STA, &wifi_config);
+
+        sprintf(response, "WIFI %s %s\n", wifi_config.sta.ssid, wifi_config.sta.password);
+
     } else if (strcmp(cmd, "PULL") == 0) {
+
         ESP_LOGI("cmd", "PULL");
         xEventGroupSetBits(event_group, HTTP_PULL_BIT);
         store_http_pull_bit();
-    } else if (strcmp(cmd, "CONFIGPULL") == 0) {
+
+        strcpy(response, "PULL\n");
+
+    } else if (strcmp(cmd, "GETPULLSTATUS") == 0) {
+
+        EventBits_t uxBits = xEventGroupGetBits(event_group);
+        bool pull_enabled = (uxBits & HTTP_PULL_BIT) != 0;
+        bool wifi_connected = (uxBits & WIFI_CONNECTED_BIT) != 0;
+
+        sprintf(response, "PULLSTATUS %d %d\n", pull_enabled ? 1 : 0, wifi_connected ? 1 : 0);                
+
+    } else if (strcmp(cmd, "SETPULLSERVER") == 0) {
+        
         ESP_LOGI("cmd", "CONFIGPULL Server=%s", arg1);
         ESP_LOGI("cmd", "CONFIGPULL Address=%s", arg2);
 
@@ -150,6 +205,19 @@ static void handle_command(char* cmd, char* arg1, char* arg2) {
         strcpy(http_pull_address, arg2);
 
         store_http_pull_data();
+
+        sprintf(response, "SERVER %s %s\n", http_pull_server, http_pull_address);
+
+    } else if (strcmp(cmd, "GETPULLSERVER") == 0) {
+
+        sprintf(response, "SERVER %s %s\n", http_pull_server, http_pull_address);
+
+    } else {
+        strcpy(response, "UNKNOWN COMMAND\n");
+    }
+
+    if (strlen(response) > 0 && client != 0) {
+        esp_spp_write(client, strlen(response), (uint8_t*) response);
     }
 
 

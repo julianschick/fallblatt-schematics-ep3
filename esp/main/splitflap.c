@@ -63,21 +63,31 @@ void setup_gpio() {
 static esp_err_t event_handler(void *ctx, system_event_t *event)
 {
     switch(event->event_id) {
-    case SYSTEM_EVENT_STA_START:
-        esp_wifi_connect();
-        break;
-    case SYSTEM_EVENT_STA_GOT_IP:
-        xEventGroupSetBits(event_group, WIFI_CONNECTED_BIT);
-        break;
-    case SYSTEM_EVENT_STA_DISCONNECTED:
-        /* This is a workaround as ESP32 WiFi libs don't currently
-           auto-reassociate. */
-        esp_wifi_connect();
-        xEventGroupClearBits(event_group, WIFI_CONNECTED_BIT);
-        break;
-    default:
-        break;
+        case SYSTEM_EVENT_STA_START:
+            esp_wifi_connect();
+            break;
+
+        case SYSTEM_EVENT_STA_GOT_IP:
+
+            xSemaphoreTake(ip_semaphore, portMAX_DELAY);
+            wifi_client_ip = event->event_info.got_ip.ip_info.ip;
+            xSemaphoreGive(ip_semaphore);
+            xEventGroupSetBits(event_group, WIFI_CONNECTED_BIT);
+            break;
+
+        case SYSTEM_EVENT_STA_DISCONNECTED:
+
+            esp_wifi_connect();
+            xEventGroupClearBits(event_group, WIFI_CONNECTED_BIT);
+            xSemaphoreTake(ip_semaphore, portMAX_DELAY);
+            ip4_addr_set_zero(&wifi_client_ip);
+            xSemaphoreGive(ip_semaphore);
+            break;
+
+        default:
+            break;
     }
+
     return ESP_OK;
 }
 
@@ -91,7 +101,7 @@ static void setup_wifi(void)
     //ESP_ERROR_CHECK( esp_wifi_set_storage(WIFI_STORAGE_RAM) );
     //ESP_LOGI(TAG_WIFI, "Setting WiFi configuration SSID %s...", wifi_config.sta.ssid);
     ESP_ERROR_CHECK( esp_wifi_set_mode(WIFI_MODE_STA) );
-    //ESP_ERROR_CHECK( esp_wifi_set_config(ESP_IF_WIFI_STA, &wifi_config) );
+    //ESP_ERROR_CHECK( esp_wifi_set_config(WIFI_IF_STA, &sta_config) );
     ESP_ERROR_CHECK( esp_wifi_start() );
 }
 
@@ -200,20 +210,11 @@ void flap_task() {
             next_flap_is_home = true;
         }
 
-        /*char ch = fgetc(stdin);
-        if (ch < NUMBER_OF_FLAPS) {
-            flap_cmd = ch;
-            printf("flap_cmd = %d\n", flap_cmd);
-        } else if (ch == 110) {
-            flap_cmd++;
-            printf("flap_cmd = %d\n", flap_cmd);    
-        }*/
-
         hsensor_ch_flag = NOCHANGE;
         fsensor_ch_flag = NOCHANGE;
 
         if (flap_ch_flag) {
-            if (current_flap == flap_cmd) {
+            if (current_flap == flap_cmd && !current_flap_inaccurate) {
                 gpio_set_level(PIN_MOTOR, 1);
                 motor_running = false;
                 ESP_LOGI(TAG_FLAP, "Motor OFF");
@@ -222,7 +223,7 @@ void flap_task() {
 
         flap_ch_flag = false;
 
-        if ((current_flap != flap_cmd || current_flap_inaccurate) && !motor_running) {
+        if (current_flap != flap_cmd && !motor_running) {
             gpio_set_level(PIN_MOTOR, 0);
             motor_running = true;
             ESP_LOGI(TAG_FLAP, "Motor ON");
@@ -236,6 +237,11 @@ void app_main()
     setup_nvs();
     
     event_group = xEventGroupCreate();
+    ip_semaphore = xSemaphoreCreateBinary();
+    xSemaphoreGive(ip_semaphore);
+    ip4_addr_set_zero(&wifi_client_ip);
+    ip4_addr_set_zero(&zero_ip);
+
 
     restore_http_pull_data();
     restore_http_pull_bit();

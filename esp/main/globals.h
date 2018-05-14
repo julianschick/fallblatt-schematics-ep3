@@ -11,6 +11,7 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "freertos/event_groups.h"
+#include "freertos/semphr.h"
 
 //Tasks
 TaskHandle_t flap_task_h;
@@ -20,6 +21,8 @@ TaskHandle_t http_client_task_h;
 // Logging
 #include "esp_log.h"
 
+#include "tcpip_adapter.h"
+
 // Log Tags
 #define TAG_FLAP "flap"
 #define TAG_WIFI "wifiU"
@@ -28,17 +31,20 @@ TaskHandle_t http_client_task_h;
 #define TAG_HTTP_CLIENT "httpclient"
 #define TAG_NVS "nvs"
 
-//Settings
+// Settings
 #define NUMBER_OF_FLAPS 40
 
-// Event group for task sync
+// Task synchronization
 EventGroupHandle_t event_group;
 static const int WIFI_CONNECTED_BIT = BIT0;
 static const int HTTP_PULL_BIT = BIT1;
+SemaphoreHandle_t ip_semaphore;
 
 // HTTP pull settings
 char http_pull_server[64];
 char http_pull_address[64];
+ip4_addr_t wifi_client_ip;
+ip4_addr_t zero_ip;
 
 
 

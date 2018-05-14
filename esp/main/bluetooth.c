@@ -47,33 +47,32 @@ static void bluetooth_callback(esp_spp_cb_event_t event, esp_spp_cb_param_t *par
 
             break;
 
-            case ESP_SPP_DISCOVERY_COMP_EVT:
-        ESP_LOGI(TAG_BT, "ESP_SPP_DISCOVERY_COMP_EVT");
-        break;
-    case ESP_SPP_OPEN_EVT:
-        ESP_LOGI(TAG_BT, "ESP_SPP_OPEN_EVT");
-        break;
-    case ESP_SPP_CLOSE_EVT:
-        client = 0;
-        ESP_LOGI(TAG_BT, "ESP_SPP_CLOSE_EVT");
-        break;
-    case ESP_SPP_START_EVT:
-        ESP_LOGI(TAG_BT, "ESP_SPP_START_EVT");
-        break;
-    case ESP_SPP_CL_INIT_EVT:
-        ESP_LOGI(TAG_BT, "ESP_SPP_CL_INIT_EVT");
-        break;
-
-         case ESP_SPP_CONG_EVT:
-        ESP_LOGI(TAG_BT, "ESP_SPP_CONG_EVT");
-        break;
-    case ESP_SPP_WRITE_EVT:
-        ESP_LOGI(TAG_BT, "ESP_SPP_WRITE_EVT");
-        break;
-    case ESP_SPP_SRV_OPEN_EVT:
-        client = param->open.handle;
-        ESP_LOGI(TAG_BT, "ESP_SPP_SRV_OPEN_EVT");
-        break;
+        case ESP_SPP_DISCOVERY_COMP_EVT:
+            ESP_LOGI(TAG_BT, "ESP_SPP_DISCOVERY_COMP_EVT");
+            break;
+        case ESP_SPP_OPEN_EVT:
+            ESP_LOGI(TAG_BT, "ESP_SPP_OPEN_EVT");
+            break;
+        case ESP_SPP_CLOSE_EVT:
+            client = 0;
+            ESP_LOGI(TAG_BT, "ESP_SPP_CLOSE_EVT");
+            break;
+        case ESP_SPP_START_EVT:
+            ESP_LOGI(TAG_BT, "ESP_SPP_START_EVT");
+            break;
+        case ESP_SPP_CL_INIT_EVT:
+            ESP_LOGI(TAG_BT, "ESP_SPP_CL_INIT_EVT");
+            break;
+        case ESP_SPP_CONG_EVT:
+            ESP_LOGI(TAG_BT, "ESP_SPP_CONG_EVT");
+            break;
+        case ESP_SPP_WRITE_EVT:
+            ESP_LOGI(TAG_BT, "ESP_SPP_WRITE_EVT");
+            break;
+        case ESP_SPP_SRV_OPEN_EVT:
+            client = param->open.handle;
+            ESP_LOGI(TAG_BT, "ESP_SPP_SRV_OPEN_EVT");
+                break;
         
         default:
 
@@ -159,6 +158,7 @@ static void handle_command(char* cmd, char* arg1, char* arg2) {
         wifi_config_t wifi_config;
         strcpy((char*)wifi_config.sta.ssid, arg1);
         strcpy((char*)wifi_config.sta.password, arg2);
+        wifi_config.sta.bssid_set = false;
         
         if (esp_wifi_set_config(ESP_IF_WIFI_STA, &wifi_config) == ESP_OK) {
 
@@ -179,6 +179,19 @@ static void handle_command(char* cmd, char* arg1, char* arg2) {
         esp_wifi_get_config(ESP_IF_WIFI_STA, &wifi_config);
 
         sprintf(response, "WIFI %s %s\n", wifi_config.sta.ssid, wifi_config.sta.password);
+
+    } else if (strcmp(cmd, "GETIP") == 0) {
+
+        xSemaphoreTake(ip_semaphore, portMAX_DELAY);
+
+        if (ip4_addr_cmp(&wifi_client_ip, &zero_ip)) {
+            sprintf(response, "IP NONE\n");
+        } else {
+            sprintf(response, "IP %d.%d.%d.%d\n", IP2STR(&wifi_client_ip));
+        }
+
+        xSemaphoreGive(ip_semaphore);
+
 
     } else if (strcmp(cmd, "PULL") == 0) {
 
@@ -239,7 +252,7 @@ static bool parse_buffer() {
         char* str = (char*)calloc(first_newline + 1, sizeof(char));
 
         strcpy(str, bt_buffer);
-        char* delimiter = " ";
+        const char* delimiter = " ";
 
         char* ptr = strtok(str, delimiter);
         char cmd[256] = "";

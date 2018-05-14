@@ -33,6 +33,7 @@ FLAP # | Springt zum Blatt # | FLAP # oder INVALID COMMAND
 REBOOT | Neustart | REBOOT
 SETWIFI [SSID] [PASS] | Verbindet sich mit einem WLAN (Einstellungen bleiben nach dem Neustart erhalten) | WIFI [SSID] [PASS] oder COMMAND EXECUTION FAILED
 GETWIFI | Gibt die WLAN-Einstellungen zurück | WIFI [SSID] [PASS]
+GETIP | Gibt die IP zurück, die dem Gerät per DHCP zugewiesen wurde | IP [IP] oder IP NONE
 PULL | Aktiviert den Pull-Modus (Deaktivierung durch Sprung zu festem Blatt) | PULL
 GETPULLSTATUS | Status des Pull-Modus | [B1] [B2] (B1 und B2 sind entweder 0 oder 1, B1 = Pull-Modus aktiv, B2 = WLAN verbunden)
 SETPULLSERVER [SRV] [ADR] | Setzt den Server für den Pull-Modus | SERVER [SRV] [ADR]

@@ -159,8 +159,24 @@ static void handle_command(char* cmd, char* arg1, char* arg2) {
         strcpy((char*)wifi_config.sta.ssid, arg1);
         strcpy((char*)wifi_config.sta.password, arg2);
         wifi_config.sta.bssid_set = false;
+
+        bool wifi_active = strlen(arg1) > 0;
         
         if (esp_wifi_set_config(ESP_IF_WIFI_STA, &wifi_config) == ESP_OK) {
+
+            if (wifi_active) {
+                
+                esp_wifi_start();
+
+                if ((xEventGroupGetBits(event_group) & WIFI_CONNECTED_BIT) != 0) {
+                    esp_wifi_disconnect();    
+                } else {
+                    esp_wifi_connect();
+                }            
+
+            } else {
+                esp_wifi_stop();
+            }
 
             wifi_config_t actual_wifi_config;
             esp_wifi_get_config(ESP_IF_WIFI_STA, &actual_wifi_config);

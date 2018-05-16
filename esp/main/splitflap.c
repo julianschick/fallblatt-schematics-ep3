@@ -63,6 +63,7 @@ void setup_gpio() {
 static esp_err_t event_handler(void *ctx, system_event_t *event)
 {
     switch(event->event_id) {
+        
         case SYSTEM_EVENT_STA_START:
             esp_wifi_connect();
             break;
@@ -77,11 +78,12 @@ static esp_err_t event_handler(void *ctx, system_event_t *event)
 
         case SYSTEM_EVENT_STA_DISCONNECTED:
 
-            esp_wifi_connect();
             xEventGroupClearBits(event_group, WIFI_CONNECTED_BIT);
             xSemaphoreTake(ip_semaphore, portMAX_DELAY);
             ip4_addr_set_zero(&wifi_client_ip);
             xSemaphoreGive(ip_semaphore);
+
+            esp_wifi_connect();
             break;
 
         default:
@@ -102,7 +104,14 @@ static void setup_wifi(void)
     //ESP_LOGI(TAG_WIFI, "Setting WiFi configuration SSID %s...", wifi_config.sta.ssid);
     ESP_ERROR_CHECK( esp_wifi_set_mode(WIFI_MODE_STA) );
     //ESP_ERROR_CHECK( esp_wifi_set_config(WIFI_IF_STA, &sta_config) );
-    ESP_ERROR_CHECK( esp_wifi_start() );
+
+    wifi_config_t actual_wifi_config;
+    esp_wifi_get_config(ESP_IF_WIFI_STA, &actual_wifi_config);
+
+    if (strlen((char*)actual_wifi_config.sta.ssid) > 0) {
+        esp_wifi_start();
+    }
+
 }
 
 inline void read_sensors_raw_values() {
@@ -178,21 +187,21 @@ void flap_task() {
         read_sensors();
 
         if (hsensor_ch_flag == RISING) {
-            ESP_LOGI(TAG_FLAP, "Home sensor level RISING");
+            //ESP_LOGI(TAG_FLAP, "Home sensor level RISING");
         } else if (hsensor_ch_flag == FALLING) {
-            ESP_LOGI(TAG_FLAP, "Home sensor level FALLING");
+            //ESP_LOGI(TAG_FLAP, "Home sensor level FALLING");
         }
 
         if (fsensor_ch_flag == RISING) {
-            ESP_LOGI(TAG_FLAP, "Flap sensor level RISING");
+            //ESP_LOGI(TAG_FLAP, "Flap sensor level RISING");
         } else if (fsensor_ch_flag == FALLING) {
-            ESP_LOGI(TAG_FLAP, "Flap sensor level FALLING");
+            //ESP_LOGI(TAG_FLAP, "Flap sensor level FALLING");
         }
 
         if (fsensor_ch_flag == RISING) {
             current_flap = (current_flap + 1) % NUMBER_OF_FLAPS;
             flap_ch_flag = true;
-            ESP_LOGI(TAG_FLAP, "current_flap = %d", current_flap);
+            //ESP_LOGI(TAG_FLAP, "current_flap = %d", current_flap);
 
             if (next_flap_is_home) {
                 if (current_flap != 0) {
@@ -242,13 +251,11 @@ void app_main()
     ip4_addr_set_zero(&wifi_client_ip);
     ip4_addr_set_zero(&zero_ip);
 
-
     restore_http_pull_data();
     restore_http_pull_bit();
 
     setup_bluetooth();
     setup_wifi();
-
 
     xTaskCreate(&flap_task, "flap_task", 2048, NULL, configMAX_PRIORITIES - 1, &flap_task_h);
     xTaskCreate(&http_server_task, "http_server_task", 4096, NULL, 1, &http_server_task_h);

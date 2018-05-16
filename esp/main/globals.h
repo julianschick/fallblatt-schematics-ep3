@@ -13,7 +13,7 @@
 #include "freertos/event_groups.h"
 #include "freertos/semphr.h"
 
-//Tasks
+// Tasks
 TaskHandle_t flap_task_h;
 TaskHandle_t http_server_task_h;
 TaskHandle_t http_client_task_h;
@@ -21,6 +21,7 @@ TaskHandle_t http_client_task_h;
 // Logging
 #include "esp_log.h"
 
+// ip4_addr_t
 #include "tcpip_adapter.h"
 
 // Log Tags
@@ -43,9 +44,10 @@ SemaphoreHandle_t ip_semaphore;
 // HTTP pull settings
 char http_pull_server[64];
 char http_pull_address[64];
+
+// Assigned IP
 ip4_addr_t wifi_client_ip;
 ip4_addr_t zero_ip;
-
 
 
 

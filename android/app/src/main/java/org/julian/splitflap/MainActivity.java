@@ -78,7 +78,7 @@ public class MainActivity extends AppCompatActivity {
         ListView flaplist = (ListView) findViewById(R.id.flaplist);
         flaplist.setAdapter(flaplistAdapter);
 
-        statusText = findViewById(R.id.statusText);
+        statusText = (TextView) findViewById(R.id.statusText);
 
         flaplist.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override

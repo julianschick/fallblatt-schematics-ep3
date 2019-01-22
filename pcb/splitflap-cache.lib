@@ -1,14 +1,13 @@
-EESchema-LIBRARY Version 2.3
+EESchema-LIBRARY Version 2.4
 #encoding utf-8
 #
-# +3V3
+# splitflap-rescue_+3.3V
 #
-DEF +3V3 #PWR 0 0 Y Y 1 F P
+DEF splitflap-rescue_+3.3V #PWR 0 0 Y Y 1 F P
 F0 "#PWR" 0 -150 50 H I C CNN
-F1 "+3V3" 0 140 50 H V C CNN
+F1 "splitflap-rescue_+3.3V" 0 140 50 H V C CNN
 F2 "" 0 0 50 H I C CNN
 F3 "" 0 0 50 H I C CNN
-ALIAS +3.3V
 DRAW
 P 2 0 1 0 -30 50 0 100 N
 P 2 0 1 0 0 0 0 100 N
@@ -17,11 +16,11 @@ X +3V3 1 0 0 0 U 50 50 1 1 W N
 ENDDRAW
 ENDDEF
 #
-# 230VAC_L
+# splitflap-rescue_230VAC_L
 #
-DEF 230VAC_L #PWR 0 0 Y Y 1 F P
+DEF splitflap-rescue_230VAC_L #PWR 0 0 Y Y 1 F P
 F0 "#PWR" 0 -150 50 H I C CNN
-F1 "230VAC_L" 0 140 50 H V C CNN
+F1 "splitflap-rescue_230VAC_L" 0 140 50 H V C CNN
 F2 "" 0 0 50 H I C CNN
 F3 "" 0 0 50 H I C CNN
 DRAW
@@ -32,11 +31,11 @@ X 230VAC_L 1 0 0 0 U 50 50 1 1 W N
 ENDDRAW
 ENDDEF
 #
-# 230VAC_N
+# splitflap-rescue_230VAC_N
 #
-DEF 230VAC_N #PWR 0 0 Y Y 1 F P
+DEF splitflap-rescue_230VAC_N #PWR 0 0 Y Y 1 F P
 F0 "#PWR" 0 -150 50 H I C CNN
-F1 "230VAC_N" 0 140 50 H V C CNN
+F1 "splitflap-rescue_230VAC_N" 0 140 50 H V C CNN
 F2 "" 0 0 50 H I C CNN
 F3 "" 0 0 50 H I C CNN
 DRAW
@@ -47,11 +46,11 @@ X 230VAC_N 1 0 0 0 U 50 50 1 1 W N
 ENDDRAW
 ENDDEF
 #
-# 48VAC_L
+# splitflap-rescue_48VAC_L
 #
-DEF 48VAC_L #PWR 0 0 Y Y 1 F P
+DEF splitflap-rescue_48VAC_L #PWR 0 0 Y Y 1 F P
 F0 "#PWR" 0 -150 50 H I C CNN
-F1 "48VAC_L" 0 140 50 H V C CNN
+F1 "splitflap-rescue_48VAC_L" 0 140 50 H V C CNN
 F2 "" 0 0 50 H I C CNN
 F3 "" 0 0 50 H I C CNN
 DRAW
@@ -62,11 +61,11 @@ X 48VAC_L 1 0 0 0 U 50 50 1 1 W N
 ENDDRAW
 ENDDEF
 #
-# 48VAC_N
+# splitflap-rescue_48VAC_N
 #
-DEF 48VAC_N #PWR 0 0 Y Y 1 F P
+DEF splitflap-rescue_48VAC_N #PWR 0 0 Y Y 1 F P
 F0 "#PWR" 0 -150 50 H I C CNN
-F1 "48VAC_N" 0 140 50 H V C CNN
+F1 "splitflap-rescue_48VAC_N" 0 140 50 H V C CNN
 F2 "" 0 0 50 H I C CNN
 F3 "" 0 0 50 H I C CNN
 DRAW
@@ -77,30 +76,11 @@ X 48VAC_N 1 0 0 0 U 50 50 1 1 W N
 ENDDRAW
 ENDDEF
 #
-# AP1117-15
+# splitflap-rescue_C
 #
-DEF AP1117-15 U 0 10 Y Y 1 F N
-F0 "U" -150 125 50 H V C CNN
-F1 "AP1117-15" 0 125 50 H V L CNN
-F2 "TO_SOT_Packages_SMD:SOT-223-3Lead_TabPin2" 0 200 50 H I C CNN
-F3 "" 100 -250 50 H I C CNN
-ALIAS AP1117-18 AP1117-25 AP1117-33 AP1117-50 LD1117S33TR_SOT223 LD1117S12TR_SOT223 LD1117S18TR_SOT223 LD1117S25TR_SOT223 LD1117S50TR_SOT223 NCP1117-12_SOT223 NCP1117-1.5_SOT223 NCP1117-1.8_SOT223 NCP1117-2.0_SOT223 NCP1117-2.5_SOT223 NCP1117-2.85_SOT223 NCP1117-3.3_SOT223 NCP1117-5.0_SOT223
-$FPLIST
- SOT?223*TabPin2*
-$ENDFPLIST
-DRAW
-S -200 -200 200 75 0 1 10 f
-X GND 1 0 -300 100 U 50 50 1 1 W
-X VO 2 300 0 100 L 50 50 1 1 P
-X VI 3 -300 0 100 R 50 50 1 1 W
-ENDDRAW
-ENDDEF
-#
-# C
-#
-DEF C C 0 10 N Y 1 F N
+DEF splitflap-rescue_C C 0 10 N Y 1 F N
 F0 "C" 25 100 50 H V L CNN
-F1 "C" 25 -100 50 H V L CNN
+F1 "splitflap-rescue_C" 25 -100 50 H V L CNN
 F2 "" 38 -150 50 H I C CNN
 F3 "" 0 0 50 H I C CNN
 $FPLIST
@@ -114,11 +94,11 @@ X ~ 2 0 -150 110 U 50 50 1 1 P
 ENDDRAW
 ENDDEF
 #
-# CP
+# splitflap-rescue_CP
 #
-DEF CP C 0 10 N Y 1 F N
+DEF splitflap-rescue_CP C 0 10 N Y 1 F N
 F0 "C" 25 100 50 H V L CNN
-F1 "CP" 25 -100 50 H V L CNN
+F1 "splitflap-rescue_CP" 25 -100 50 H V L CNN
 F2 "" 38 -150 50 H I C CNN
 F3 "" 0 0 50 H I C CNN
 $FPLIST
@@ -137,11 +117,11 @@ X ~ 2 0 -150 110 U 50 50 1 1 P
 ENDDRAW
 ENDDEF
 #
-# Conn_01x19_Female
+# splitflap-rescue_Conn_01x19_Female
 #
-DEF Conn_01x19_Female J 0 40 Y N 1 F N
+DEF splitflap-rescue_Conn_01x19_Female J 0 40 Y N 1 F N
 F0 "J" 0 1000 50 H V C CNN
-F1 "Conn_01x19_Female" 0 -1000 50 H V C CNN
+F1 "splitflap-rescue_Conn_01x19_Female" 0 -1000 50 H V C CNN
 F2 "" 0 0 50 H I C CNN
 F3 "" 0 0 50 H I C CNN
 $FPLIST
@@ -190,14 +170,6 @@ P 2 1 1 6 -50 700 -20 700 N
 P 2 1 1 6 -50 800 -20 800 N
 P 2 1 1 6 -50 900 -20 900 N
 X Pin_1 1 -200 900 150 R 50 50 1 1 P
-X Pin_2 2 -200 800 150 R 50 50 1 1 P
-X Pin_3 3 -200 700 150 R 50 50 1 1 P
-X Pin_4 4 -200 600 150 R 50 50 1 1 P
-X Pin_5 5 -200 500 150 R 50 50 1 1 P
-X Pin_6 6 -200 400 150 R 50 50 1 1 P
-X Pin_7 7 -200 300 150 R 50 50 1 1 P
-X Pin_8 8 -200 200 150 R 50 50 1 1 P
-X Pin_9 9 -200 100 150 R 50 50 1 1 P
 X Pin_10 10 -200 0 150 R 50 50 1 1 P
 X Pin_11 11 -200 -100 150 R 50 50 1 1 P
 X Pin_12 12 -200 -200 150 R 50 50 1 1 P
@@ -208,14 +180,22 @@ X Pin_16 16 -200 -600 150 R 50 50 1 1 P
 X Pin_17 17 -200 -700 150 R 50 50 1 1 P
 X Pin_18 18 -200 -800 150 R 50 50 1 1 P
 X Pin_19 19 -200 -900 150 R 50 50 1 1 P
+X Pin_2 2 -200 800 150 R 50 50 1 1 P
+X Pin_3 3 -200 700 150 R 50 50 1 1 P
+X Pin_4 4 -200 600 150 R 50 50 1 1 P
+X Pin_5 5 -200 500 150 R 50 50 1 1 P
+X Pin_6 6 -200 400 150 R 50 50 1 1 P
+X Pin_7 7 -200 300 150 R 50 50 1 1 P
+X Pin_8 8 -200 200 150 R 50 50 1 1 P
+X Pin_9 9 -200 100 150 R 50 50 1 1 P
 ENDDRAW
 ENDDEF
 #
-# DB25_Female
+# splitflap-rescue_DB25_Female
 #
-DEF DB25_Female J 0 40 Y N 1 F N
+DEF splitflap-rescue_DB25_Female J 0 40 Y N 1 F N
 F0 "J" 0 1350 50 H V C CNN
-F1 "DB25_Female" 0 -1375 50 H V C CNN
+F1 "splitflap-rescue_DB25_Female" 0 -1375 50 H V C CNN
 F2 "" 0 0 50 H I C CNN
 F3 "" 0 0 50 H I C CNN
 $FPLIST
@@ -274,7 +254,23 @@ P 2 0 1 0 -150 1100 20 1100 N
 P 2 0 1 0 -150 1200 -100 1200 N
 P 5 0 1 10 -150 1325 150 1175 150 -1175 -150 -1325 -150 1325 f
 X 1 1 -300 1200 150 R 50 50 1 1 P
+X 10 10 -300 -600 150 R 50 50 1 1 P
+X 11 11 -300 -800 150 R 50 50 1 1 P
+X 12 12 -300 -1000 150 R 50 50 1 1 P
+X 13 13 -300 -1200 150 R 50 50 1 1 P
+X P14 14 -300 1100 150 R 50 50 1 1 P
+X P15 15 -300 900 150 R 50 50 1 1 P
+X P16 16 -300 700 150 R 50 50 1 1 P
+X P17 17 -300 500 150 R 50 50 1 1 P
+X P18 18 -300 300 150 R 50 50 1 1 P
+X P19 19 -300 100 150 R 50 50 1 1 P
 X 2 2 -300 1000 150 R 50 50 1 1 P
+X P20 20 -300 -100 150 R 50 50 1 1 P
+X P21 21 -300 -300 150 R 50 50 1 1 P
+X P22 22 -300 -500 150 R 50 50 1 1 P
+X P23 23 -300 -700 150 R 50 50 1 1 P
+X P24 24 -300 -900 150 R 50 50 1 1 P
+X P25 25 -300 -1100 150 R 50 50 1 1 P
 X 3 3 -300 800 150 R 50 50 1 1 P
 X 4 4 -300 600 150 R 50 50 1 1 P
 X 5 5 -300 400 150 R 50 50 1 1 P
@@ -282,30 +278,14 @@ X 6 6 -300 200 150 R 50 50 1 1 P
 X 7 7 -300 0 150 R 50 50 1 1 P
 X 8 8 -300 -200 150 R 50 50 1 1 P
 X 9 9 -300 -400 150 R 50 50 1 1 P
-X 10 10 -300 -600 150 R 50 50 1 1 P
-X P20 20 -300 -100 150 R 50 50 1 1 P
-X 11 11 -300 -800 150 R 50 50 1 1 P
-X P21 21 -300 -300 150 R 50 50 1 1 P
-X 12 12 -300 -1000 150 R 50 50 1 1 P
-X P22 22 -300 -500 150 R 50 50 1 1 P
-X 13 13 -300 -1200 150 R 50 50 1 1 P
-X P23 23 -300 -700 150 R 50 50 1 1 P
-X P14 14 -300 1100 150 R 50 50 1 1 P
-X P24 24 -300 -900 150 R 50 50 1 1 P
-X P15 15 -300 900 150 R 50 50 1 1 P
-X P25 25 -300 -1100 150 R 50 50 1 1 P
-X P16 16 -300 700 150 R 50 50 1 1 P
-X P17 17 -300 500 150 R 50 50 1 1 P
-X P18 18 -300 300 150 R 50 50 1 1 P
-X P19 19 -300 100 150 R 50 50 1 1 P
 ENDDRAW
 ENDDEF
 #
-# DB9_Female
+# splitflap-rescue_DB9_Female
 #
-DEF DB9_Female J 0 40 Y N 1 F N
+DEF splitflap-rescue_DB9_Female J 0 40 Y N 1 F N
 F0 "J" 0 550 50 H V C CNN
-F1 "DB9_Female" 0 -575 50 H V C CNN
+F1 "splitflap-rescue_DB9_Female" 0 -575 50 H V C CNN
 F2 "" 0 0 50 H I C CNN
 F3 "" 0 0 50 H I C CNN
 $FPLIST
@@ -343,11 +323,11 @@ X 9 9 -300 -300 150 R 50 50 1 1 P
 ENDDRAW
 ENDDEF
 #
-# D_Bridge_+-AA-RESCUE-splitflap
+# splitflap-rescue_D_Bridge_+-AA-RESCUE-splitflap
 #
-DEF D_Bridge_+-AA-RESCUE-splitflap D 0 50 Y Y 1 F N
+DEF splitflap-rescue_D_Bridge_+-AA-RESCUE-splitflap D 0 50 Y Y 1 F N
 F0 "D" 50 275 50 H V L CNN
-F1 "D_Bridge_+-AA-RESCUE-splitflap" 50 200 50 H V L CNN
+F1 "splitflap-rescue_D_Bridge_+-AA-RESCUE-splitflap" 50 200 50 H V L CNN
 F2 "" 0 0 50 H I C CNN
 F3 "" 0 0 50 H I C CNN
 $FPLIST
@@ -371,11 +351,11 @@ X ~ 4 0 300 100 D 50 50 1 1 I
 ENDDRAW
 ENDDEF
 #
-# GND
+# splitflap-rescue_GND
 #
-DEF GND #PWR 0 0 Y Y 1 F P
+DEF splitflap-rescue_GND #PWR 0 0 Y Y 1 F P
 F0 "#PWR" 0 -250 50 H I C CNN
-F1 "GND" 0 -150 50 H V C CNN
+F1 "splitflap-rescue_GND" 0 -150 50 H V C CNN
 F2 "" 0 0 50 H I C CNN
 F3 "" 0 0 50 H I C CNN
 DRAW
@@ -384,11 +364,11 @@ X GND 1 0 0 0 D 50 50 1 1 W N
 ENDDRAW
 ENDDEF
 #
-# Jumper
+# splitflap-rescue_Jumper
 #
-DEF Jumper JP 0 30 Y N 1 F N
+DEF splitflap-rescue_Jumper JP 0 30 Y N 1 F N
 F0 "JP" 0 150 50 H V C CNN
-F1 "Jumper" 0 -80 50 H V C CNN
+F1 "splitflap-rescue_Jumper" 0 -80 50 H V C CNN
 F2 "" 0 0 50 H I C CNN
 F3 "" 0 0 50 H I C CNN
 DRAW
@@ -400,11 +380,29 @@ X 2 2 300 0 165 L 50 50 0 1 P
 ENDDRAW
 ENDDEF
 #
-# Screw_Terminal_01x02
+# splitflap-rescue_LD1117S33TR_SOT223
 #
-DEF Screw_Terminal_01x02 J 0 40 Y N 1 F N
+DEF splitflap-rescue_LD1117S33TR_SOT223 U 0 10 Y Y 1 F N
+F0 "U" -150 125 50 H V C CNN
+F1 "splitflap-rescue_LD1117S33TR_SOT223" 0 125 50 H V L CNN
+F2 "TO_SOT_Packages_SMD:SOT-223-3Lead_TabPin2" 0 200 50 H I C CNN
+F3 "" 100 -250 50 H I C CNN
+$FPLIST
+ SOT?223*TabPin2*
+$ENDFPLIST
+DRAW
+S -200 -200 200 75 0 1 10 f
+X GND 1 0 -300 100 U 50 50 1 1 W
+X VO 2 300 0 100 L 50 50 1 1 P
+X VI 3 -300 0 100 R 50 50 1 1 W
+ENDDRAW
+ENDDEF
+#
+# splitflap-rescue_Screw_Terminal_01x02
+#
+DEF splitflap-rescue_Screw_Terminal_01x02 J 0 40 Y N 1 F N
 F0 "J" 0 100 50 H V C CNN
-F1 "Screw_Terminal_01x02" 0 -200 50 H V C CNN
+F1 "splitflap-rescue_Screw_Terminal_01x02" 0 -200 50 H V C CNN
 F2 "" 0 0 50 H I C CNN
 F3 "" 0 0 50 H I C CNN
 $FPLIST
@@ -424,11 +422,11 @@ X Pin_2 2 -200 -100 150 R 50 50 1 1 P
 ENDDRAW
 ENDDEF
 #
-# Transformer_1P_1S-RESCUE-splitflap
+# splitflap-rescue_Transformer_1P_1S-RESCUE-splitflap
 #
-DEF Transformer_1P_1S-RESCUE-splitflap T 0 40 Y N 1 F N
+DEF splitflap-rescue_Transformer_1P_1S-RESCUE-splitflap T 0 40 Y N 1 F N
 F0 "T" 0 250 50 H V C CNN
-F1 "Transformer_1P_1S-RESCUE-splitflap" 0 -300 50 H V C CNN
+F1 "splitflap-rescue_Transformer_1P_1S-RESCUE-splitflap" 0 -300 50 H V C CNN
 F2 "" 0 0 50 H I C CNN
 F3 "" 0 0 50 H I C CNN
 DRAW
@@ -457,11 +455,11 @@ X SA 9 400 -200 300 L 50 50 1 1 P
 ENDDRAW
 ENDDEF
 #
-# Transformer_1P_2S-RESCUE-splitflap
+# splitflap-rescue_Transformer_1P_2S-RESCUE-splitflap
 #
-DEF Transformer_1P_2S-RESCUE-splitflap T 0 40 Y N 1 F N
+DEF splitflap-rescue_Transformer_1P_2S-RESCUE-splitflap T 0 40 Y N 1 F N
 F0 "T" 0 500 50 H V C CNN
-F1 "Transformer_1P_2S-RESCUE-splitflap" 0 -500 50 H V C CNN
+F1 "splitflap-rescue_Transformer_1P_2S-RESCUE-splitflap" 0 -500 50 H V C CNN
 F2 "" 0 0 50 H I C CNN
 F3 "" 0 0 50 H I C CNN
 DRAW
@@ -488,19 +486,19 @@ A 100 350 50 1799 -899 0 1 0 N 51 350 100 301
 P 2 0 1 0 -20 -400 -20 400 N
 P 2 0 1 0 20 400 20 -400 N
 X AB 1 -400 -200 300 R 50 50 1 1 P
+X SC 11 400 -100 300 L 50 50 1 1 P
+X SD 12 400 -400 300 L 50 50 1 1 P
 X AA 6 -400 200 300 R 50 50 1 1 P
 X SA 7 400 400 300 L 50 50 1 1 P
 X SB 8 400 100 300 L 50 50 1 1 P
-X SC 11 400 -100 300 L 50 50 1 1 P
-X SD 12 400 -400 300 L 50 50 1 1 P
 ENDDRAW
 ENDDEF
 #
-# Varistor
+# splitflap-rescue_Varistor
 #
-DEF Varistor RV 0 0 N Y 1 F N
+DEF splitflap-rescue_Varistor RV 0 0 N Y 1 F N
 F0 "RV" 125 0 50 V V C CNN
-F1 "Varistor" -125 0 50 V V C CNN
+F1 "splitflap-rescue_Varistor" -125 0 50 V V C CNN
 F2 "" -70 0 50 V I C CNN
 F3 "" 0 0 50 H I C CNN
 $FPLIST

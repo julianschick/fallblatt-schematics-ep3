@@ -1,0 +1,3 @@
+(sym_lib_table
+  (lib (name splitflap-rescue)(type Legacy)(uri ${KIPRJMOD}/splitflap-rescue.lib)(options "")(descr ""))
+)

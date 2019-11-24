@@ -30,3 +30,20 @@ Die Platine hat zwei Stromkreise, ein Niederspannungsstromkreis für die Steueru
 ## Code
 
 Code für die Platine kann in den Repositories [fallblatt-code-legacy](https://github.com/julianschick/fallblatt-code-legacy) und [fallblatt-code](https://github.com/julianschick/fallblatt-code) gefunden werden, wobei letzterer aktueller und mit mehr Funktionen ausgestattet ist.
+
+## Teileliste
+
+* [Transformator 2x24V _Block VC 10/1/12_](https://www.reichelt.de/printtrafo-10-va-2x-24-v-2x-208-ma-rm-27-5-mm-ei-48-16-8-224-p27492.html)
+* [Transformator 9V _Block VB 2,0/1/15_](https://www.reichelt.de/printtrafo-2-va-9-v-222-ma-rm-20-mm-ei-30-15-5-109-p27328.html)
+* [Varistor >300V RM 7,5mm](https://www.reichelt.de/varistor-rm-7-5-mm-300-v-10-epc-b72210-s030-p239932.html)
+* [Brückengleichrichter Rund, Wechselstrompins gegenüber, RM 5mm](https://www.reichelt.de/brueckengleichrichter-100-v-1-5-a-b70c1500rund-p181713.html)
+* Schraubklemme 2-polig RM 7,5mm
+* [Spannungsregler 3,3V Formfaktor TO-220 _STM LD1117 V33C_](https://www.reichelt.de/ldo-regler-fest-3-3-v-to-220-ld1117-v33c-p200891.html?)
+* Elektrolytkondensator 470u, RM 5mm
+* Elektrolytkondensator 10u, RM 2mm
+* Kondensator 100n, RM 2,5mm
+* [D-Sub Buchse 9-polig, Printmontage 90°, Abstand Pinreihe zu Steckerfläche 10mm](https://www.segor.de/#Q=DS09F-90%25C2%25B0-10mm)
+* [D-Sub Buchse 25-polig, Printmontage 90°, Abstand Pinreihe zu Steckerfläche 10mm](https://www.segor.de/#Q=DS25F-90%25C2%25B0-10mm)
+* 4 x Pinheader 20-polig, Female, Vertikal, RM 2,54mm
+* 2 x Pinheader 2-polig, Male, Vertikal, RM 2,54mm
+
